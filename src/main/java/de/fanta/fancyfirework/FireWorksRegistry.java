@@ -17,13 +17,10 @@ public class FireWorksRegistry {
     private final Map<NamespacedKey, AbstractFireWork> valentineFireWorkMap;
     private final Map<NamespacedKey, AbstractFireWork> halloweenFireWorkMap;
 
-    private final FancyFirework plugin;
-
-    FireWorksRegistry(FancyFirework plugin) {
+    FireWorksRegistry() {
         this.fireWorkMap = new HashMap<>();
         this.valentineFireWorkMap = new HashMap<>();
         this.halloweenFireWorkMap = new HashMap<>();
-        this.plugin = plugin;
     }
 
     public void register(AbstractFireWork fireWork) {
@@ -67,6 +64,14 @@ public class FireWorksRegistry {
 
     public List<NamespacedKey> getKeys() {
         return List.copyOf(fireWorkMap.keySet());
+    }
+
+    public ItemStack fixFirework(ItemStack item) {
+        AbstractFireWork fireWork = getByItemStack(item);
+        if (fireWork == null) return item;
+        ItemStack updated = fireWork.getItemStack();
+        updated.setAmount(item.getAmount());
+        return updated;
     }
 
     public void cancelAllTasks() {

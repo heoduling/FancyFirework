@@ -1,12 +1,8 @@
-enabled: false
-spawnrate: 100
 votereward: false
 redstonemode: false
 dispenserMode: true
 dispenserDelaSeconds: 30
 litplayer: true
-# 玩家持续无操作达到指定秒数后视为离开（默认 120 秒）
-maxAFKTime: 120
 loottable:
   enabled: false
   chance: 0.5

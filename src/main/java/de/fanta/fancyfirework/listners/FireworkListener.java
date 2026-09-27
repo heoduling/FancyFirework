@@ -76,11 +76,6 @@ public class FireworkListener implements Listener {
         if (fireWork != null) {
             fireWork.onExplode(e.getEntity());
         }
-        if (plugin.getFireWorkWorks().enabled()) {
-            if (entity.getCustomName() != null && entity.getCustomName().equals("FancyFirework")) {
-                entity.getLocation().getWorld().dropItem(entity.getLocation(), plugin.getRegistry().getRandomFireWorkItem());
-            }
-        }
     }
 
     @EventHandler
@@ -490,7 +485,7 @@ public class FireworkListener implements Listener {
             int modifyCount = 0;
             ItemStack[] storage = e.getInventory().getStorageContents();
             for (int i = 0; i < storage.length; i++) {
-                ItemStack newStack = plugin.getFireWorkWorks().fixFirework(storage[i]);
+                ItemStack newStack = plugin.getRegistry().fixFirework(storage[i]);
                 if (!Objects.equal(storage[i], newStack)) {
                     storage[i] = newStack;
                     modifyCount++;

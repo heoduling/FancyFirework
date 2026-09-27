@@ -25,7 +25,5 @@ public record EventRegistration(FancyFirework plugin) {
         }
         pM.registerEvents(new FireworkListener(), plugin);
         pM.registerEvents(new LootTableListener(), plugin);
-        pM.registerEvents(new AFKListener(), plugin);
-        pM.registerEvents(new PlayerListener(), plugin);
     }
 }

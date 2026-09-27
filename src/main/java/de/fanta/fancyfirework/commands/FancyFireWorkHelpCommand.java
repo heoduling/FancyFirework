@@ -22,10 +22,8 @@ public class FancyFireWorkHelpCommand extends SubCommand {
         if (sender.hasPermission(FancyFirework.ADMIN_PERMISSION)) {
             if (player) {
                 ChatUtil.sendNormalMessage(sender, "/ff menu - 打开管理员烟花大全");
-                ChatUtil.sendNormalMessage(sender, "/ff enable、/ff disable - 开关随机烟花生成");
                 ChatUtil.sendNormalMessage(sender, "/ff use enable、/ff use disable - 开关烟花使用");
             }
-            ChatUtil.sendNormalMessage(sender, "/ff setspawnrate <数值> - 设置随机生成率（数值越大，生成越少）");
             ChatUtil.sendNormalMessage(sender, "/ff reload - 重新读取配置");
         }
         return true;

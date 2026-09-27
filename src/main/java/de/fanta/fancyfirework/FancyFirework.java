@@ -3,21 +3,17 @@ package de.fanta.fancyfirework;
 import de.fanta.fancyfirework.commands.CommandRegistration;
 import de.fanta.fancyfirework.commands.AdminFireworkMenuCommand;
 import de.fanta.fancyfirework.fireworks.FireWorkRegistration;
-import de.fanta.fancyfirework.listners.AFKListener;
 import de.fanta.fancyfirework.listners.EventRegistration;
 import de.fanta.fancyfirework.schedular.GlobalScheduler;
 import de.fanta.fancyfirework.schedular.Scheduler;
 import de.fanta.fancyfirework.utils.ChatUtil;
 import de.fanta.fancyfirework.utils.WorldGuardHelper;
-import de.myzelyam.api.vanish.VanishAPI;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.kitteh.vanish.VanishPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,11 +26,8 @@ public final class FancyFirework extends JavaPlugin {
     public static final String MOD_PERMISSION = "fancyfirework.mod";
     public static Logger LOGGER;
     private static FancyFirework plugin;
-    private FireWorkWorks fireWorkWorks;
     private FireWorksRegistry registry;
     private AdminFireworkMenuCommand adminMenu;
-    private VanishPlugin vanishNoPacketPlugin;
-    private boolean isSuperVanishPluginInstalled = false;
     private WorldGuardHelper worldGuardHelper;
     private volatile long time;
     private volatile boolean stopping;
@@ -58,14 +51,6 @@ public final class FancyFirework extends JavaPlugin {
         LOGGER = getLogger();
         plugin = this;
 
-        if (plugin.getServer().getPluginManager().getPlugin("VanishNoPacket") != null) {
-            vanishNoPacketPlugin = (VanishPlugin) plugin.getServer().getPluginManager().getPlugin("VanishNoPacket");
-        }
-
-        if (Bukkit.getPluginManager().isPluginEnabled("SuperVanish") || Bukkit.getPluginManager().isPluginEnabled("PremiumVanish")) {
-            isSuperVanishPluginInstalled = true;
-        }
-
         if (plugin.getServer().getPluginManager().getPlugin("WorldGuard") != null) {
             worldGuardHelper = new WorldGuardHelper(getServer().getPluginManager().getPlugin("WorldGuard"));
         }
@@ -76,8 +61,7 @@ public final class FancyFirework extends JavaPlugin {
         loadConfig();
         saveConfig();
 
-        fireWorkWorks = new FireWorkWorks();
-        this.registry = new FireWorksRegistry(this);
+        this.registry = new FireWorksRegistry();
 
         adminMenu = new AdminFireworkMenuCommand(this);
         new CommandRegistration(this, adminMenu).registerCommands();
@@ -86,21 +70,13 @@ public final class FancyFirework extends JavaPlugin {
 
         this.time = 0;
         this.startColorTimeTask(1);
-
-        getScheduler().runGlobalAtFixedRate(AFKListener::onTimer, 2 * 20, 10);
-
-        for (Player p : getServer().getOnlinePlayers()) {
-            AFKListener.handleJoin(p);
-        }
     }
 
     @Override
     public void onDisable() {
         stopping = true;
         if (adminMenu != null) adminMenu.shutdown();
-        if (fireWorkWorks != null) fireWorkWorks.shutdown();
         if (registry != null) registry.cancelAllTasks();
-        if (AFKListener.playerTimes != null) AFKListener.playerTimes.clear();
         PluginManager pm = getServer().getPluginManager();
         for (Permission permission : ownedPermissions) {
             if (pm.getPermission(permission.getName()) == permission) pm.removePermission(permission);
@@ -108,22 +84,8 @@ public final class FancyFirework extends JavaPlugin {
         ownedPermissions.clear();
     }
 
-    public FireWorkWorks getFireWorkWorks() {
-        return fireWorkWorks;
-    }
-
     public FireWorksRegistry getRegistry() {
         return registry;
-    }
-
-    public boolean isVanish(Player p) {
-        if (vanishNoPacketPlugin != null) {
-            return vanishNoPacketPlugin.getManager().isVanished(p);
-        } else if (isSuperVanishPluginInstalled) {
-            return VanishAPI.isInvisible(p);
-        } else {
-            return false;
-        }
     }
 
     public void startColorTimeTask(long l) {
@@ -145,7 +107,6 @@ public final class FancyFirework extends JavaPlugin {
     public void reloadFireworkConfig() {
         reloadConfig();
         loadConfig();
-        if (fireWorkWorks != null) fireWorkWorks.reloadSpawnRate();
     }
 
     public void loadConfig() {
@@ -160,9 +121,6 @@ public final class FancyFirework extends JavaPlugin {
         redstonemode = cfg.getBoolean("redstonemode", false);
         dispenserMode = cfg.getBoolean("dispenserMode", true);
         dispenserDelaSeconds = cfg.getInt("dispenserDelaSeconds", 30);
-
-        //AFK
-        AFKListener.maxIdleTime = Math.max(plugin.getConfig().getInt("maxAFKTime"), 2) * 1000;
     }
 
     public boolean isRedstonemode() {

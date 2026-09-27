@@ -10,7 +10,6 @@
 
 ## 获得烟花
 
-- 开启随机生成后，玩家上方无遮挡时会出现烟花，爆炸后掉落随机内置烟花物品。
 - 可通过 NuVotifier 投票奖励及箱子战利品表获得烟花。
 - 拥有 `fancyfirework.mod` 权限的玩家可使用 `/ff give <烟花键> <数量> [玩家名]` 领取烟花；发给他人还需 `fancyfirework.admin` 权限。烟花键可通过 Tab 补全。
 
@@ -20,19 +19,15 @@
 | --- | --- | --- |
 | `/ff help` | 无 | 按权限显示可执行命令；也可输入 `/ff` 查看帮助入口 |
 | `/ff menu` | `fancyfirework.admin` | 打开烟花大全 |
-| `/ff enable`、`/ff disable` | `fancyfirework.admin` | 开关随机烟花生成 |
 | `/ff use enable`、`/ff use disable` | `fancyfirework.admin` | 开关烟花使用 |
-| `/ff setspawnrate <数值>` | `fancyfirework.admin` | 设置随机生成率；数值越大，生成越少 |
 | `/ff give <烟花键> <数量> [玩家名]` | `fancyfirework.mod`，发给他人还需 `fancyfirework.admin` | 发放烟花 |
 | `/ff reload` | `fancyfirework.admin` | 重新读取配置 |
 
 ## 配置
 
-默认配置位于 `src/main/resources/config.yml`。保留了原有配置键及其含义。旧配置中的原版英文默认物品说明会在首次启用时自动改为中文；服主自行修改过的说明保持原样。已经发给玩家的旧物品不会被自动改名。
+默认配置位于 `src/main/resources/config.yml`。旧配置中的原版英文默认物品说明会在首次启用时自动改为中文；服主自行修改过的说明保持原样。已经发给玩家的旧物品不会被自动改名。旧配置中的 `enabled`、`spawnrate` 和 `maxAFKTime` 已不再使用。
 
 ```yaml
-enabled: false       # 是否随机生成烟花
-spawnrate: 100       # 随机生成率；越大越少
 votereward: false    # 是否启用投票奖励
 redstonemode: false  # 是否允许红石点燃
 litplayer: true      # 是否允许在玩家头上点燃烟花
@@ -40,6 +35,6 @@ litplayer: true      # 是否允许在玩家头上点燃烟花
 
 ## 构建与安装
 
-使用 Java 25 执行 `mvn -Pshade clean verify`，独立插件产物为 `target/fancyfirework-shade.jar`。将其放入 26.2 Folia 服务端的 `plugins` 目录。已在所提供的 Shiroha 26.2 隔离服和 PlugManX 3.1.0-Beta.2 上验证插件启动与热加载。NuVotifier、TreasureChest、Vanish、WorldGuard 和 ChestShop 等可选联动仍需对应插件的环境验证。
+使用 Java 25 执行 `mvn -Pshade clean verify`，独立插件产物为 `target/fancyfirework-shade.jar`。将其放入 26.2 Folia 服务端的 `plugins` 目录。已在所提供的 Shiroha 26.2 隔离服和 PlugManX 3.1.0-Beta.2 上验证插件启动与热加载。NuVotifier、TreasureChest、WorldGuard 和 ChestShop 等可选联动仍需对应插件的环境验证。
 
 原项目：[fantahund/FancyFirework](https://github.com/fantahund/FancyFirework)。
