@@ -3,7 +3,6 @@ package de.fanta.fancyfirework.fireworks;
 import de.fanta.fancyfirework.FancyFirework;
 import de.fanta.fancyfirework.schedular.CancellableTask;
 import de.iani.cubesideutils.bukkit.items.ItemGroups;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -18,9 +17,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.EulerAngle;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This firework can be placed into the world and lit by players using flint and steel.<br>
@@ -37,7 +36,7 @@ import java.util.UUID;
  */
 public abstract class BlockFireWork extends AbstractFireWork {
 
-    private final Map<UUID, Task> activeTasks = new HashMap<>();
+    private final Map<UUID, Task> activeTasks = new ConcurrentHashMap<>();
 
     protected BlockFireWork(NamespacedKey key) {
         super(key);
@@ -140,7 +139,13 @@ public abstract class BlockFireWork extends AbstractFireWork {
     }
 
     private void removeTask(Task task) {
-        activeTasks.remove(task.entityUUID);
+        activeTasks.remove(task.entityUUID, task);
+    }
+
+    public void cancelAllTasks() {
+        for (Task task : activeTasks.values()) {
+            task.cancelOnly();
+        }
     }
 
     /**
@@ -153,6 +158,7 @@ public abstract class BlockFireWork extends AbstractFireWork {
     public class Task {
 
         protected final Player player;
+        private final Entity entity;
         protected final UUID entityUUID;
 
         protected final long duration;
@@ -162,6 +168,7 @@ public abstract class BlockFireWork extends AbstractFireWork {
         protected long tick;
         protected int counter;
         protected CancellableTask cancellableTask;
+        private volatile boolean running;
 
         protected final Runnable taskToRun;
 
@@ -177,8 +184,8 @@ public abstract class BlockFireWork extends AbstractFireWork {
          */
         public Task(Player player, Entity entity, long duration, int delay, int period, Runnable taskToRun) {
             this.player = player;
+            this.entity = entity;
             this.entityUUID = entity.getUniqueId();
-            addTask(this);
             this.duration = duration;
             this.delay = delay;
             this.period = period;
@@ -186,6 +193,7 @@ public abstract class BlockFireWork extends AbstractFireWork {
 
             this.tick = 0;
             this.cancellableTask = null;
+            addTask(this);
         }
 
         /**
@@ -214,14 +222,20 @@ public abstract class BlockFireWork extends AbstractFireWork {
          * Tick and counter are reset.
          */
         public void start() {
+            if (FancyFirework.getPlugin().isStopping()) {
+                cancelOnly();
+                return;
+            }
             this.tick = 0;
             this.counter = 0;
             Entity entity = getEntity();
             if (entity == null) {
-                stop();
+                cancelOnly();
                 return;
             }
+            this.running = true;
             this.cancellableTask = FancyFirework.getPlugin().getScheduler().runOnEntityAtFixedRate(entity, () -> {
+                if (!running || FancyFirework.getPlugin().isStopping()) return;
                 if (tick < duration + delay && entity.isValid()) {
                     onTick();
                     tick++;
@@ -229,6 +243,8 @@ public abstract class BlockFireWork extends AbstractFireWork {
                     stop();
                 }
             }, 1, 1);
+            if (cancellableTask == null) cancelOnly();
+            if (FancyFirework.getPlugin().isStopping()) cancelOnly();
         }
 
         /**
@@ -238,14 +254,8 @@ public abstract class BlockFireWork extends AbstractFireWork {
          */
         public void stop() {
             Entity entity = getEntity();
-
-            if (cancellableTask != null) {
-                cancellableTask.cancel();
-                cancellableTask = null;
-                this.tick = 0;
-
-                //Reset task & remove block + marker entity
-                removeTask(this);
+            if (running) {
+                cancelOnly();
                 if (entity instanceof Player litPlayer) {
                     ItemStack stack = litPlayer.getInventory().getHelmet();
                     if (stack != null) {
@@ -263,9 +273,17 @@ public abstract class BlockFireWork extends AbstractFireWork {
             }
         }
 
+        private void cancelOnly() {
+            running = false;
+            CancellableTask task = cancellableTask;
+            if (task != null) task.cancel();
+            cancellableTask = null;
+            removeTask(this);
+        }
+
         @Nullable
         public Entity getEntity() {
-            return Bukkit.getServer().getEntity(entityUUID);
+            return entity.isValid() ? entity : null;
         }
 
         public long getTick() {

@@ -1,5 +1,17 @@
 # FancyFirework
 
+## 26.2 Folia fork
+
+Build the standalone plugin with `mvn -Pshade clean verify` and use
+`target/fancyfirework-shade.jar`. This fork was tested on the supplied Shiroha
+26.2 server with PlugManX 3.1.0-Beta.2. Use the plugin name for hot reload:
+`plugman reload FancyFirework` (or `plugman unload FancyFirework` followed by
+`plugman load FancyFirework`). Active firework tasks stop on unload. Placed
+firework stands remain and can be lit after loading the plugin again.
+
+Optional Votifier, TreasureChest, vanish, WorldGuard, and ChestShop integrations
+were not present in that test server and need separate runtime verification.
+
 ![bStats Servers](https://img.shields.io/bstats/servers/13728)
 ![bStats Servers](https://img.shields.io/bstats/players/13728)
 ![Spiget Downloads](https://img.shields.io/spiget/downloads/98809)

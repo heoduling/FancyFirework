@@ -19,15 +19,17 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.plugin.IllegalPluginAccessException;
 
-import java.util.ArrayList;
 import java.util.UUID;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SpookyBomb extends ItemFireWork {
 
     private static final FancyFirework plugin = FancyFirework.getPlugin();
-    private final ArrayList<UUID> spookyPlayers = new ArrayList<>();
+    private final Set<UUID> spookyPlayers = ConcurrentHashMap.newKeySet();
 
     public SpookyBomb() {
         super(new NamespacedKey(FancyFirework.getPlugin(), "spooky_bomb"));
@@ -64,28 +66,32 @@ public class SpookyBomb extends ItemFireWork {
 
         for (Entity entity : world.getNearbyEntities(loc, 3, 3, 3)) {
             if (entity instanceof Player spookyPlayer) {
-                if (spookyPlayers.contains(spookyPlayer.getUniqueId())) {
-                    return;
-                }
-                if (spookyPlayer.isOnline()) {
-                    spookyPlayers.add(spookyPlayer.getUniqueId());
-                    spookyPlayer.addPotionEffect(new PotionEffect(PotionEffectType.DARKNESS, 85, 0, true));
-                    spookyPlayer.playSound(spookyPlayer, Sound.ENTITY_GHAST_HURT, SoundCategory.AMBIENT, 2, 1);
+                UUID id = spookyPlayer.getUniqueId();
+                if (spookyPlayers.add(id)) {
                     AtomicInteger tick = new AtomicInteger();
-
-                    plugin.getScheduler().runOnEntityAtFixedRate(spookyPlayer, task -> {
-                        if (spookyPlayer.isOnline()) {
-                            if (tick.get() < 4) {
-                                tick.getAndIncrement();
+                    try {
+                        var task = spookyPlayer.getScheduler().runAtFixedRate(plugin, scheduled -> {
+                            if (plugin.isStopping() || !spookyPlayer.isOnline()) {
+                                spookyPlayers.remove(id);
+                                scheduled.cancel();
+                                return;
+                            }
+                            int current = tick.getAndIncrement();
+                            if (current == 0) {
+                                spookyPlayer.addPotionEffect(new PotionEffect(PotionEffectType.DARKNESS, 85, 0, true));
+                                spookyPlayer.playSound(spookyPlayer, Sound.ENTITY_GHAST_HURT, SoundCategory.AMBIENT, 2, 1);
+                            }
+                            if (current < 4) {
                                 spookyPlayer.playSound(spookyPlayer, Sound.ENTITY_WARDEN_HEARTBEAT, SoundCategory.AMBIENT, 1, 1);
                             } else {
-                                spookyPlayers.remove(spookyPlayer.getUniqueId());
-                                task.cancel();
+                                spookyPlayers.remove(id);
+                                scheduled.cancel();
                             }
-                        } else {
-                            spookyPlayers.remove(spookyPlayer.getUniqueId());
-                        }
-                    }, 16, 16);
+                        }, () -> spookyPlayers.remove(id), 1, 16);
+                        if (task == null) spookyPlayers.remove(id);
+                    } catch (IllegalPluginAccessException ignored) {
+                        spookyPlayers.remove(id);
+                    }
                 }
             }
         }

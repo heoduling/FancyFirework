@@ -16,10 +16,13 @@ import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import org.bukkit.plugin.IllegalPluginAccessException;
 
 public class LootTableListener implements Listener {
     private final FancyFirework plugin = FancyFirework.getPlugin();
-    private final List<Location> lootTableSaveList = new ArrayList<>();
+    private final Set<Object> lootTableSaveList = ConcurrentHashMap.newKeySet();
 
     @EventHandler
     public void onPlayerUseLootChest(PlayerInteractEvent e) {
@@ -37,7 +40,7 @@ public class LootTableListener implements Listener {
         }
 
         if (plugin.getConfig().getBoolean("loottable.enabled")) {
-            addFireworktoLootChest(chest.getInventory());
+            addFireworktoLootChest(chest.getInventory(), chest.getLocation(), null);
         }
     }
 
@@ -49,27 +52,29 @@ public class LootTableListener implements Listener {
             return;
         }
 
-        if (minecart.getLootTable() == null) {
-            return;
-        }
-
         if (plugin.getConfig().getBoolean("loottable.enabled")) {
-            addFireworktoLootChest(minecart.getInventory());
+            try {
+                minecart.getScheduler().execute(plugin, () -> {
+                    if (!plugin.isStopping() && minecart.isValid() && minecart.getLootTable() != null) {
+                        addFireworktoLootChest(minecart.getInventory(), minecart.getUniqueId(), minecart);
+                    }
+                }, null, 1);
+            } catch (IllegalPluginAccessException ignored) {
+                // The plugin was disabled before the minecart could be checked.
+            }
         }
 
     }
 
-    public void addFireworktoLootChest(Inventory chest) {
-        if (lootTableSaveList.contains(chest.getLocation())) {
-            return;
-        }
-        lootTableSaveList.add(chest.getLocation());
+    private void addFireworktoLootChest(Inventory chest, Object id, StorageMinecart minecart) {
+        if (!lootTableSaveList.add(id)) return;
         Random random = new Random();
         double chance = plugin.getConfig().getDouble("loottable.chance", 0.5);
         boolean hasFireWork = random.nextDouble() < chance;
         if (hasFireWork) {
             ItemStack randomFirework = plugin.getRegistry().getRandomFireWorkItem();
-            plugin.getScheduler().runLocalDelayed(chest.getLocation(), () -> {
+            Runnable fill = () -> {
+                if (plugin.isStopping()) return;
                 List<Integer> freeSlots = new ArrayList<>();
                 for (int i = 0; i < chest.getSize(); i++) {
                     if (chest.getItem(i) == null) {
@@ -79,7 +84,16 @@ public class LootTableListener implements Listener {
                 if (!freeSlots.isEmpty()) {
                     chest.setItem(freeSlots.get(random.nextInt(freeSlots.size())), randomFirework);
                 }
-            }, 1L);
+            };
+            try {
+                if (minecart == null) {
+                    plugin.getScheduler().runLocalDelayed(chest.getLocation(), fill, 1L);
+                } else {
+                    minecart.getScheduler().runDelayed(plugin, task -> fill.run(), null, 1L);
+                }
+            } catch (IllegalPluginAccessException ignored) {
+                // Plugin is stopping; the delayed inventory write is discarded.
+            }
         }
     }
 }

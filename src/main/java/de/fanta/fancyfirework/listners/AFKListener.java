@@ -1,7 +1,6 @@
 package de.fanta.fancyfirework.listners;
 
 import de.fanta.fancyfirework.PlayerInfo;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -23,15 +22,16 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 
-import java.util.HashMap;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AFKListener implements Listener {
 
-    public static int maxIdleTime = 10 * 1000;
-    public static HashMap<Player, PlayerInfo> playerTimes;
+    public static volatile int maxIdleTime = 10 * 1000;
+    public static ConcurrentHashMap<UUID, PlayerInfo> playerTimes;
 
     public AFKListener() {
-        playerTimes = new HashMap<>();
+        playerTimes = new ConcurrentHashMap<>();
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -126,12 +126,14 @@ public class AFKListener implements Listener {
     }
 
     private void handleMoved(Player p) {
-        PlayerInfo playerInfo = playerTimes.get(p);
+        PlayerInfo playerInfo = playerTimes.get(p.getUniqueId());
         if (playerInfo != null) {
-            playerInfo.last_move_time = System.currentTimeMillis();
-            if (playerInfo.afk) {
-                playerInfo.afk = false;
-                playerInfo.last_check_time = playerInfo.last_move_time;
+            synchronized (playerInfo) {
+                playerInfo.last_move_time = System.currentTimeMillis();
+                if (playerInfo.afk) {
+                    playerInfo.afk = false;
+                    playerInfo.last_check_time = playerInfo.last_move_time;
+                }
             }
         }
     }
@@ -139,19 +141,21 @@ public class AFKListener implements Listener {
 
     public static void handleJoin(final Player p) {
         PlayerInfo playerInfo = new PlayerInfo();
-        playerTimes.put(p, playerInfo);
+        playerTimes.put(p.getUniqueId(), playerInfo);
     }
 
     public static void onTimer() {
         long t = System.currentTimeMillis();
-        for (Player p : Bukkit.getServer().getOnlinePlayers()) {
-            handleTimer(p, t);
+        for (PlayerInfo playerInfo : playerTimes.values()) {
+            handleTimer(playerInfo, t);
         }
     }
 
-    private static void handleTimer(Player p, long time) {
-        PlayerInfo playerInfo = playerTimes.get(p);
-        if (playerInfo != null && !playerInfo.afk) {
+    private static void handleTimer(PlayerInfo playerInfo, long time) {
+        synchronized (playerInfo) {
+            if (playerInfo.afk) {
+                return;
+            }
             long addTime;
             if (time < playerInfo.last_move_time + maxIdleTime) {
                 addTime = time - playerInfo.last_check_time;
@@ -165,6 +169,6 @@ public class AFKListener implements Listener {
     }
 
     private void handleLogout(Player p) {
-        playerTimes.remove(p);
+        playerTimes.remove(p.getUniqueId());
     }
 }

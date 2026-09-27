@@ -7,7 +7,7 @@ public class PlayerInfo {
 
     public long last_move_time;
 
-    public boolean afk;
+    public volatile boolean afk;
 
     public PlayerInfo() {
         last_check_time = System.currentTimeMillis();

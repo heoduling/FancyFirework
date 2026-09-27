@@ -18,7 +18,8 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.kitteh.vanish.VanishPlugin;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 public final class FancyFirework extends JavaPlugin {
@@ -33,7 +34,9 @@ public final class FancyFirework extends JavaPlugin {
     private VanishPlugin vanishNoPacketPlugin;
     private boolean isSuperVanishPluginInstalled = false;
     private WorldGuardHelper worldGuardHelper;
-    private long time;
+    private volatile long time;
+    private volatile boolean stopping;
+    private final List<Permission> ownedPermissions = new ArrayList<>();
     private boolean redstonemode;
     private boolean dispenserMode;
     private int dispenserDelaSeconds;
@@ -49,6 +52,7 @@ public final class FancyFirework extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        stopping = false;
         LOGGER = getLogger();
         plugin = this;
 
@@ -89,7 +93,15 @@ public final class FancyFirework extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
+        stopping = true;
+        if (fireWorkWorks != null) fireWorkWorks.shutdown();
+        if (registry != null) registry.cancelAllTasks();
+        if (AFKListener.playerTimes != null) AFKListener.playerTimes.clear();
+        PluginManager pm = getServer().getPluginManager();
+        for (Permission permission : ownedPermissions) {
+            if (pm.getPermission(permission.getName()) == permission) pm.removePermission(permission);
+        }
+        ownedPermissions.clear();
     }
 
     public FireWorkWorks getFireWorkWorks() {
@@ -129,6 +141,7 @@ public final class FancyFirework extends JavaPlugin {
     public void reloadFireworkConfig() {
         reloadConfig();
         loadConfig();
+        if (fireWorkWorks != null) fireWorkWorks.reloadSpawnRate();
     }
 
     public void loadConfig() {
@@ -164,10 +177,14 @@ public final class FancyFirework extends JavaPlugin {
 
     public void registerPermission(Permission permission) {
         PluginManager pm = getServer().getPluginManager();
-        Set<Permission> permissions = pm.getPermissions();
-        if (!permissions.contains(permission)) {
+        if (pm.getPermission(permission.getName()) == null) {
             pm.addPermission(permission);
+            ownedPermissions.add(permission);
         }
+    }
+
+    public boolean isStopping() {
+        return stopping;
     }
 
     public Scheduler getScheduler() {

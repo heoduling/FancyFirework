@@ -2,6 +2,7 @@ package de.fanta.fancyfirework;
 
 import com.google.common.base.Preconditions;
 import de.fanta.fancyfirework.fireworks.AbstractFireWork;
+import de.fanta.fancyfirework.fireworks.BlockFireWork;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
@@ -66,6 +67,12 @@ public class FireWorksRegistry {
 
     public List<NamespacedKey> getKeys() {
         return List.copyOf(fireWorkMap.keySet());
+    }
+
+    public void cancelAllTasks() {
+        for (AbstractFireWork fireWork : fireWorkMap.values()) {
+            if (fireWork instanceof BlockFireWork blockFireWork) blockFireWork.cancelAllTasks();
+        }
     }
 
     public ItemStack getRandomFireWorkItem() {

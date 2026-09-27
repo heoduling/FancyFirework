@@ -5,6 +5,7 @@ import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
+import org.bukkit.plugin.IllegalPluginAccessException;
 
 import java.util.function.Consumer;
 
@@ -48,8 +49,12 @@ public class GlobalScheduler implements Scheduler {
 
     @Override
     public CancellableTask runOnEntityAtFixedRate(Entity entity, Runnable task, long delay, long period) {
-        ScheduledTask createdTask = entity.getScheduler().runAtFixedRate(this.plugin, scheduledTask -> task.run(), null, delay, period);
-        return createdTask == null ? null : createdTask::cancel;
+        try {
+            ScheduledTask createdTask = entity.getScheduler().runAtFixedRate(this.plugin, scheduledTask -> task.run(), null, delay, period);
+            return createdTask == null ? null : createdTask::cancel;
+        } catch (IllegalPluginAccessException ignored) {
+            return null;
+        }
     }
 
     @Override

@@ -2,6 +2,7 @@ package de.fanta.fancyfirework;
 
 import de.fanta.fancyfirework.fireworks.AbstractFireWork;
 import de.fanta.fancyfirework.listners.AFKListener;
+import de.fanta.fancyfirework.schedular.CancellableTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
@@ -17,15 +18,21 @@ import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.util.Vector;
 
 import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 public class FireWorkWorks {
     private final FancyFirework plugin = FancyFirework.getPlugin();
-    private boolean enabled;
+    private volatile boolean enabled;
+    private volatile int spawnRate;
+    private final ConcurrentHashMap<UUID, CancellableTask> playerTasks = new ConcurrentHashMap<>();
     private final Random rand;
 
     public FireWorkWorks() {
         this.enabled = plugin.getConfig().getBoolean("enabled");
+        this.spawnRate = Math.max(1, plugin.getConfig().getInt("spawnrate", 100));
         this.rand = new Random();
         if (enabled) {
             enableTask();
@@ -40,18 +47,43 @@ public class FireWorkWorks {
     }
 
     public void disableTask() {
+        playerTasks.values().forEach(CancellableTask::cancel);
+        playerTasks.clear();
         plugin.getLogger().log(Level.INFO, "Stopped spawning random firework.");
     }
 
     public void startTaskFor(Player player) {
-        if (!enabled) return;
-        plugin.getScheduler().runOnEntityAtFixedRate(player, task -> {
-            if (player == null || !player.isOnline() || !enabled) {
-                task.cancel();
+        if (!enabled || plugin.isStopping()) return;
+        UUID id = player.getUniqueId();
+        if (playerTasks.containsKey(id)) return;
+        AtomicReference<CancellableTask> ownTask = new AtomicReference<>();
+        CancellableTask task = plugin.getScheduler().runOnEntityAtFixedRate(player, () -> {
+            if (!player.isOnline() || !enabled || plugin.isStopping()) {
+                CancellableTask current = ownTask.get();
+                if (current != null) {
+                    playerTasks.remove(id, current);
+                    current.cancel();
+                }
                 return;
             }
             if (rand.nextInt(getSpawnRate()) == 0) spawnFirework(player);
         }, 1L, 1L);
+        if (task != null) {
+            ownTask.set(task);
+            CancellableTask old = playerTasks.putIfAbsent(id, task);
+            if (old != null) task.cancel();
+            if (plugin.isStopping() || !enabled) stopTaskFor(player);
+        }
+    }
+
+    public void stopTaskFor(Player player) {
+        CancellableTask task = playerTasks.remove(player.getUniqueId());
+        if (task != null) task.cancel();
+    }
+
+    public void shutdown() {
+        enabled = false;
+        disableTask();
     }
 
     public void spawnFirework(Player p) {
@@ -59,8 +91,8 @@ public class FireWorkWorks {
         Location loc = p.getLocation().add(0, 2, 0);
         Location toppos = world.getHighestBlockAt(loc.getBlockX(), loc.getBlockZ(), HeightMap.MOTION_BLOCKING).getLocation();
         boolean sky = loc.getBlockY() > toppos.getBlockY();
-        PlayerInfo playerInfo = AFKListener.playerTimes.get(p);
-        if (sky && (p.getGameMode() == GameMode.SURVIVAL || p.getGameMode() == GameMode.ADVENTURE) && !FancyFirework.getPlugin().isVanish(p) && !playerInfo.afk) {
+        PlayerInfo playerInfo = AFKListener.playerTimes.get(p.getUniqueId());
+        if (sky && (p.getGameMode() == GameMode.SURVIVAL || p.getGameMode() == GameMode.ADVENTURE) && !FancyFirework.getPlugin().isVanish(p) && playerInfo != null && !playerInfo.afk) {
             Firework firework = (Firework) world.spawnEntity(loc, EntityType.FIREWORK_ROCKET);
             firework.setVelocity(new Vector((rand.nextBoolean() ? 1 : -1) * rand.nextDouble(0.01), rand.nextDouble(0.5, 1.5), (rand.nextBoolean() ? 1 : -1) * rand.nextDouble(0.01)));
             FireworkMeta fireworkMeta = firework.getFireworkMeta();
@@ -91,10 +123,15 @@ public class FireWorkWorks {
     }
 
     public int getSpawnRate() {
-        return plugin.getConfig().getInt("spawnrate", 100);
+        return spawnRate;
+    }
+
+    public void reloadSpawnRate() {
+        spawnRate = Math.max(1, plugin.getConfig().getInt("spawnrate", 100));
     }
 
     public void setSpawnRate(int spawnRate) {
+        this.spawnRate = Math.max(1, spawnRate);
         plugin.getConfig().set("spawnrate", spawnRate);
         plugin.saveConfig();
     }

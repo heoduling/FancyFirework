@@ -5,6 +5,7 @@ import de.fanta.fancyfirework.FireWorkWorks;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 public class PlayerListener implements Listener {
 
@@ -16,5 +17,10 @@ public class PlayerListener implements Listener {
         if (fireWorkWorks.enabled()) {
             fireWorkWorks.startTaskFor(e.getPlayer());
         }
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent e) {
+        plugin.getFireWorkWorks().stopTaskFor(e.getPlayer());
     }
 }

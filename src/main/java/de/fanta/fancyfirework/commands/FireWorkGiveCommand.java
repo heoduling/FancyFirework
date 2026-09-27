@@ -13,6 +13,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.IllegalPluginAccessException;
 
 import java.util.ArrayList;
 
@@ -46,7 +47,14 @@ public class FireWorkGiveCommand extends PlayerSubCommand {
                         return true;
                     }
                     String giveName = args.getNext();
-                    givePlayer = Bukkit.getPlayer(giveName);
+                    givePlayer = null;
+                    // The 26.2 player view is backed by CopyOnWriteArrayList; name lookup uses a plain HashMap.
+                    for (Player online : Bukkit.getOnlinePlayers()) {
+                        if (online.getName().equalsIgnoreCase(giveName)) {
+                            givePlayer = online;
+                            break;
+                        }
+                    }
 
                     if (givePlayer == null) {
                         ChatUtil.sendErrorMessage(player, "Player " + giveName + " is not online.");
@@ -58,16 +66,18 @@ public class FireWorkGiveCommand extends PlayerSubCommand {
                 return true;
             }
             if (fireWork != null) {
-                Inventory inv = givePlayer.getInventory();
-                ItemStack itemStack = fireWork.getItemStack();
-                itemStack.setAmount(amount);
-                if (inv.firstEmpty() == -1) {
-                    ChatUtil.sendErrorMessage(player, "Item could not be added. Your inventory is full!");
+                if (givePlayer == player) {
+                    give(player, player, fireWork, amount);
                 } else {
-                    givePlayer.getInventory().addItem(itemStack);
-                    ChatUtil.sendNormalMessage(givePlayer, amount + "x " + itemStack.getItemMeta().getDisplayName() + ChatUtil.GREEN + " has been added to your inventory");
-                    if (!player.getUniqueId().equals(givePlayer.getUniqueId())) {
-                        ChatUtil.sendNormalMessage(player, amount + "x " + itemStack.getItemMeta().getDisplayName() + ChatUtil.GREEN + " has been added to " + givePlayer.getName() + "'s inventory");
+                    Player target = givePlayer;
+                    String targetName = target.getName();
+                    try {
+                        boolean accepted = target.getScheduler().execute(plugin,
+                                () -> give(player, target, fireWork, amount),
+                                () -> tellSender(player, "Player " + targetName + " is not online.", true), 1);
+                        if (!accepted) ChatUtil.sendErrorMessage(player, "Player " + targetName + " is not online.");
+                    } catch (IllegalPluginAccessException ignored) {
+                        ChatUtil.sendErrorMessage(player, "FancyFirework is stopping.");
                     }
                 }
             } else {
@@ -78,6 +88,44 @@ public class FireWorkGiveCommand extends PlayerSubCommand {
             return true;
         }
         return true;
+    }
+
+    private void give(Player sender, Player target, AbstractFireWork fireWork, int amount) {
+        if (plugin.isStopping() || !target.isOnline()) {
+            tellSender(sender, "Player " + target.getName() + " is not online.", true);
+            return;
+        }
+        Inventory inv = target.getInventory();
+        ItemStack itemStack = fireWork.getItemStack();
+        itemStack.setAmount(amount);
+        int capacity = 0;
+        for (ItemStack existing : inv.getStorageContents()) {
+            if (existing == null || existing.getType().isAir()) capacity += itemStack.getMaxStackSize();
+            else if (existing.isSimilar(itemStack)) capacity += existing.getMaxStackSize() - existing.getAmount();
+        }
+        if (capacity < amount) {
+            tellSender(sender, "Item could not be added. The inventory is full!", true);
+            return;
+        }
+        inv.addItem(itemStack);
+        ChatUtil.sendNormalMessage(target, amount + "x " + itemStack.getItemMeta().getDisplayName() + ChatUtil.GREEN + " has been added to your inventory");
+        if (target != sender) {
+            tellSender(sender, amount + "x " + itemStack.getItemMeta().getDisplayName() + ChatUtil.GREEN + " has been added to " + target.getName() + "'s inventory", false);
+        }
+    }
+
+    private void tellSender(Player sender, String message, boolean error) {
+        if (plugin.isStopping()) return;
+        try {
+            sender.getScheduler().execute(plugin, () -> {
+                if (sender.isOnline()) {
+                    if (error) ChatUtil.sendErrorMessage(sender, message);
+                    else ChatUtil.sendNormalMessage(sender, message);
+                }
+            }, null, 1);
+        } catch (IllegalPluginAccessException ignored) {
+            // The plugin was disabled before feedback could be scheduled.
+        }
     }
 
     @Override
