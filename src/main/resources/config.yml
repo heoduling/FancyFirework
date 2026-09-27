@@ -5,7 +5,7 @@ redstonemode: false
 dispenserMode: true
 dispenserDelaSeconds: 30
 litplayer: true
-#after X seconds the player is afk (default: 120 Sec = 2 Min
+# 玩家持续无操作达到指定秒数后视为离开（默认 120 秒）
 maxAFKTime: 120
 loottable:
   enabled: false
@@ -17,7 +17,7 @@ loottable:
     maxprice: 32
     maxuse: 4
 itemlore:
-  - '§aThe fireworks can be placed'
-  - '§aand lit with a flint and steel'
+  - '§a可将烟花放置在地上'
+  - '§a使用打火石点燃'
 itemlorebangsnap:
-  - '§aThrow them on the floor for fun'
+  - '§a扔到地上即可触发'

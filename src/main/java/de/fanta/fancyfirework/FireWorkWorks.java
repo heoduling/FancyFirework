@@ -43,13 +43,13 @@ public class FireWorkWorks {
         for (Player player : Bukkit.getOnlinePlayers()) {
             startTaskFor(player);
         }
-        plugin.getLogger().log(Level.INFO, "Started spawning random firework.");
+        plugin.getLogger().log(Level.INFO, "已开启随机烟花生成。");
     }
 
     public void disableTask() {
         playerTasks.values().forEach(CancellableTask::cancel);
         playerTasks.clear();
-        plugin.getLogger().log(Level.INFO, "Stopped spawning random firework.");
+        plugin.getLogger().log(Level.INFO, "已关闭随机烟花生成。");
     }
 
     public void startTaskFor(Player player) {

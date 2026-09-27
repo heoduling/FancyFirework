@@ -1,6 +1,7 @@
 package de.fanta.fancyfirework;
 
 import de.fanta.fancyfirework.commands.CommandRegistration;
+import de.fanta.fancyfirework.commands.AdminFireworkMenuCommand;
 import de.fanta.fancyfirework.fireworks.FireWorkRegistration;
 import de.fanta.fancyfirework.listners.AFKListener;
 import de.fanta.fancyfirework.listners.EventRegistration;
@@ -31,6 +32,7 @@ public final class FancyFirework extends JavaPlugin {
     private static FancyFirework plugin;
     private FireWorkWorks fireWorkWorks;
     private FireWorksRegistry registry;
+    private AdminFireworkMenuCommand adminMenu;
     private VanishPlugin vanishNoPacketPlugin;
     private boolean isSuperVanishPluginInstalled = false;
     private WorldGuardHelper worldGuardHelper;
@@ -71,15 +73,16 @@ public final class FancyFirework extends JavaPlugin {
         scheduler = new GlobalScheduler(this);
         new bStats(this).registerbStats();
 
+        loadConfig();
+        saveConfig();
+
         fireWorkWorks = new FireWorkWorks();
         this.registry = new FireWorksRegistry(this);
 
-        new CommandRegistration(this).registerCommands();
+        adminMenu = new AdminFireworkMenuCommand(this);
+        new CommandRegistration(this, adminMenu).registerCommands();
         new EventRegistration(this).registerEvents();
         new FireWorkRegistration(this).registerFirework();
-
-        loadConfig();
-        saveConfig();
 
         this.time = 0;
         this.startColorTimeTask(1);
@@ -94,6 +97,7 @@ public final class FancyFirework extends JavaPlugin {
     @Override
     public void onDisable() {
         stopping = true;
+        if (adminMenu != null) adminMenu.shutdown();
         if (fireWorkWorks != null) fireWorkWorks.shutdown();
         if (registry != null) registry.cancelAllTasks();
         if (AFKListener.playerTimes != null) AFKListener.playerTimes.clear();
@@ -147,6 +151,12 @@ public final class FancyFirework extends JavaPlugin {
     public void loadConfig() {
         FileConfiguration cfg = getConfig();
         cfg.options().copyDefaults(true);
+        if (cfg.getStringList("itemlore").equals(List.of("§aThe fireworks can be placed", "§aand lit with a flint and steel"))) {
+            cfg.set("itemlore", List.of("§a可将烟花放置在地上", "§a使用打火石点燃"));
+        }
+        if (cfg.getStringList("itemlorebangsnap").equals(List.of("§aThrow them on the floor for fun"))) {
+            cfg.set("itemlorebangsnap", List.of("§a扔到地上即可触发"));
+        }
         redstonemode = cfg.getBoolean("redstonemode", false);
         dispenserMode = cfg.getBoolean("dispenserMode", true);
         dispenserDelaSeconds = cfg.getInt("dispenserDelaSeconds", 30);

@@ -14,10 +14,10 @@ public record EventRegistration(FancyFirework plugin) {
         if (plugin.getServer().getPluginManager().getPlugin("Votifier") != null) {
             if (plugin.getServer().getPluginManager().getPlugin("TreasureChest") == null) {
                 pM.registerEvents(new VoteListener(), plugin);
-                plugin.getLogger().log(Level.INFO, "Register Vote Listener");
+                plugin.getLogger().log(Level.INFO, "已注册投票奖励监听器");
             } else {
                 pM.registerEvents(new CubesideVoteListener(), plugin);
-                plugin.getLogger().log(Level.INFO, "Register Cubeside Vote Listener");
+                plugin.getLogger().log(Level.INFO, "已注册 Cubeside 投票奖励监听器");
             }
         }
         if (plugin.getServer().getPluginManager().isPluginEnabled("ChestShop")) {

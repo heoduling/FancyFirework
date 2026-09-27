@@ -17,7 +17,7 @@ public class FancyFireWorkReloadCommand extends SubCommand {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String alias, String commandString, ArgsParser args) {
         plugin.reloadFireworkConfig();
-        ChatUtil.sendNormalMessage(sender, "The config has been reloaded.");
+        ChatUtil.sendNormalMessage(sender, "配置已重新加载。");
         return true;
     }
 

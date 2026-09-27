@@ -92,12 +92,12 @@ public class FireworkListener implements Listener {
         }
         if (fireWork instanceof BlockFireWork blockFireWork) {
             if (!event.getPlayer().hasPermission(blockFireWork.getPermission())) {
-                ChatUtil.sendErrorMessage(event.getPlayer(), "You do not have the permission to use this firework here!");
+                ChatUtil.sendErrorMessage(event.getPlayer(), "你没有在这里使用该烟花的权限！");
                 event.setCancelled(true);
                 return;
             }
             if (plugin.isDisableFireWorkUse()) {
-                ChatUtil.sendErrorMessage(event.getPlayer(), "Fireworks can not currently be used!");
+                ChatUtil.sendErrorMessage(event.getPlayer(), "当前禁止使用烟花！");
                 event.setCancelled(true);
                 return;
             }
@@ -181,12 +181,12 @@ public class FireworkListener implements Listener {
 
         if (fireWork instanceof BlockFireWork blockFireWork) {
             if (!event.getPlayer().hasPermission(blockFireWork.getPermission())) {
-                ChatUtil.sendErrorMessage(event.getPlayer(), "You do not have the permission to use this firework here!");
+                ChatUtil.sendErrorMessage(event.getPlayer(), "你没有在这里使用该烟花的权限！");
                 event.setCancelled(true);
                 return;
             }
             if (plugin.isDisableFireWorkUse()) {
-                ChatUtil.sendErrorMessage(event.getPlayer(), "Fireworks can not currently be used!");
+                ChatUtil.sendErrorMessage(event.getPlayer(), "当前禁止使用烟花！");
                 event.setCancelled(true);
                 return;
             }
@@ -293,12 +293,12 @@ public class FireworkListener implements Listener {
                             AbstractFireWork fireWork = plugin.getRegistry().getByItemStack(fireworkStack);
                             if (plugin.getConfig().getBoolean("litplayer") && fireWork instanceof BlockFireWork blockFireWork) {
                                 if (!e.getPlayer().hasPermission(blockFireWork.getPermission())) {
-                                    ChatUtil.sendErrorMessage(e.getPlayer(), "You do not have the permission to use this firework here!");
+                                    ChatUtil.sendErrorMessage(e.getPlayer(), "你没有在这里使用该烟花的权限！");
                                     e.setCancelled(true);
                                     return;
                                 }
                                 if (plugin.isDisableFireWorkUse()) {
-                                    ChatUtil.sendErrorMessage(e.getPlayer(), "Fireworks can not currently be used!");
+                                    ChatUtil.sendErrorMessage(e.getPlayer(), "当前禁止使用烟花！");
                                     e.setCancelled(true);
                                     return;
                                 }
@@ -361,7 +361,7 @@ public class FireworkListener implements Listener {
 
             Location loc = stand.getLocation().add(0, 1.5, 0);
             if (!plugin.canBuild(player, loc)) {
-                ChatUtil.sendErrorMessage(player, "You can not build here");
+                ChatUtil.sendErrorMessage(player, "你不能在这里建造。");
                 return;
             }
 
@@ -393,12 +393,12 @@ public class FireworkListener implements Listener {
             }
             if (fireWork instanceof ItemFireWork itemFireWork) {
                 if (!player.hasPermission(itemFireWork.getPermission())) {
-                    ChatUtil.sendErrorMessage(player, "You do not have the permission to use this firework here!");
+                    ChatUtil.sendErrorMessage(player, "你没有在这里使用该烟花的权限！");
                     event.setCancelled(true);
                     return;
                 }
                 if (plugin.isDisableFireWorkUse()) {
-                    ChatUtil.sendErrorMessage(player, "Fireworks can not currently be used!");
+                    ChatUtil.sendErrorMessage(player, "当前禁止使用烟花！");
                     event.setCancelled(true);
                     return;
                 }

@@ -1,97 +1,44 @@
-# FancyFirework
+# FancyFirework（26.2 Folia 汉化版）
 
-## 26.2 Folia fork
+本分支适配所提供的 Shiroha 26.2 Folia 核心，并提供中文物品名称、默认说明、命令反馈和管理员烟花大全 GUI。插件内置 29 种烟花：13 种烟花筒、11 种喷泉烟花和 5 种可投掷烟花。
 
-Build the standalone plugin with `mvn -Pshade clean verify` and use
-`target/fancyfirework-shade.jar`. This fork was tested on the supplied Shiroha
-26.2 server with PlugManX 3.1.0-Beta.2. Use the plugin name for hot reload:
-`plugman reload FancyFirework` (or `plugman unload FancyFirework` followed by
-`plugman load FancyFirework`). Active firework tasks stop on unload. Placed
-firework stands remain and can be lit after loading the plugin again.
+## 管理员烟花大全
 
-Optional Votifier, TreasureChest, vanish, WorldGuard, and ChestShop integrations
-were not present in that test server and need separate runtime verification.
+拥有 `fancyfirework.admin` 权限的玩家输入 `/ff menu`（或 `/fancyfirework menu`）打开界面。界面从实际烟花注册表读取全部内置类型；左键领取 1 个，中键或 Shift+左键领取一组（一组数量以该物品的最大堆叠数为准）。背包空间不足时不会发放。其他点击、拖拽和下方背包操作在界面开启期间均被取消。
 
-![bStats Servers](https://img.shields.io/bstats/servers/13728)
-![bStats Servers](https://img.shields.io/bstats/players/13728)
-![Spiget Downloads](https://img.shields.io/spiget/downloads/98809)
-![Spiget Stars](https://img.shields.io/spiget/stars/98809)
+26.2 API 将中键点击列为创造模式动作；生存模式请使用 Shift+左键领取一组。GUI 打开期间，PlugManX 的 `reload` 和 `unload` 会拒绝操作；关闭所有管理员烟花界面后重试即可。直接通过其他插件管理器禁用插件时，需先关闭这些界面。
 
-A simple plugin that adds custom fireworks to your server.  
-Implements support for vote rewards using NuVotifier and loot table customization to acquire firework items.  
+## 获得烟花
 
-# We recommend to use paper!  
+- 开启随机生成后，玩家上方无遮挡时会出现烟花，爆炸后掉落随机内置烟花物品。
+- 可通过 NuVotifier 投票奖励及箱子战利品表获得烟花。
+- 管理员可使用 `/ff give [烟花键] <数量> <玩家名>` 发放烟花；省略玩家名时发给自己。烟花键可通过 Tab 补全。
 
+## 主要命令与权限
 
-# Default Fireworks  
-There are a couple default fireworks available that can be used out of the box.  
-Batteries,  
-Fountains,  
-and a Bang Snap  
-The batteries and fountains come in different colors (blue, green, orange, pink, purple, red, yellow) and other varieties like pride and rainbow.  
-  
-![Example](https://fantacs.de/Urus198.png)  
-(An example of three types of fountains)  
-  
-  
-# Acquire Fireworks  
-There are multiple ways players can acquire fireworks.  
-  
-## Spawn Random Fireworks  
-One way would be to use the firework spawn feature of this plugin.  
-This will spawn fireworks on players. Once a firework explodes, it drops a random item from all available firework items.  
-The fireworks will only spawn if the player has no blocks above, blocking the sky.  
-This spawn feature can be enabled and configured in the config.  
-```yml
-enabled: false  # Toggle the spawn feature  
-spawnrate: 100  # The spawn rate of the fireworks. The higher the number, the less likely it will spawn.  
-```
-  
-## Vote Rewards  
-Another way would be to use NuVotifier, which will draw a random custom firework as a vote reward.  
-Can be toggled in the config.  
-```yml 
-votereward: false # Toggle vote reward feature  
-```
-  
-## Loottables  
-You can also enable them inside all chest or chest minecart loot tables.  
-This feature can be configured in the config.  
-```yml
-loottable:  
-  enabled: false   # Toggle the loot table feature  
-  chance: 0.5      # The chance of the item spawning. (e.g. 0.5 = 50%)
-``` 
+| 命令 | 权限 | 用途 |
+| --- | --- | --- |
+| `/ff menu` | `fancyfirework.admin` | 打开烟花大全 |
+| `/ff enable`、`/ff disable` | `fancyfirework.admin` | 开关随机烟花生成 |
+| `/ff use enable`、`/ff use disable` | `fancyfirework.admin` | 开关烟花使用 |
+| `/ff setspawnrate [数值]` | `fancyfirework.admin` | 设置随机生成率；数值越大，生成越少 |
+| `/ff give [烟花键] <数量> <玩家名>` | `fancyfirework.mod`，发给他人还需 `fancyfirework.admin` | 发放烟花 |
+| `/ff reload` | `fancyfirework.admin` | 重新读取配置 |
 
-## Redstone Mode 
-The fireworks can be activated with Redstone if it is active in the config.
-```yml 
-redstonemode: false # Toggle Redstone Mode
+## 配置
+
+默认配置位于 `src/main/resources/config.yml`。保留了原有配置键及其含义。旧配置中的原版英文默认物品说明会在首次启用时自动改为中文；服主自行修改过的说明保持原样。已经发给玩家的旧物品不会被自动改名。
+
+```yaml
+enabled: false       # 是否随机生成烟花
+spawnrate: 100       # 随机生成率；越大越少
+votereward: false    # 是否启用投票奖励
+redstonemode: false  # 是否允许红石点燃
+litplayer: true      # 是否允许在玩家头上点燃烟花
 ```
 
-## Lit Player
-Fireworks can be lit on the head of players.
-```yml 
-litplayer: true # Toggle if players can lit.
-```
-  
-# Commands  
-Main command: /fancyfirework or alias /ff  
-  
-## /ff enable or /ff disable  
-**Permission: fancyfirework.admin**  
-Enables or Disables the spawning of fireworks on players.  
-See Spawn Random Fireworks above.  
-  
-## /ff setspawnrate  
-**Permission: fancyfirework.admin**    
-Sets the spawn rate of the random firework spawning.  
-The higher the number, the less likely they will spawn.  
-See Spawn Random Fireworks above.  
-  
-## /ff give [key] <amount>  
-**Permission: fancyfirework.mod**    
-Gives you the specified firework item of the specified quantity.  
-  
-(This plugin was created in a matter of two days! Documentation and possible future features will be added later on!)  
-![BSTATS](https://bstats.org/signatures/bukkit/FancyFirework.svg)
+## 构建与安装
+
+使用 Java 25 执行 `mvn -Pshade clean verify`，独立插件产物为 `target/fancyfirework-shade.jar`。将其放入 26.2 Folia 服务端的 `plugins` 目录。已在所提供的 Shiroha 26.2 隔离服和 PlugManX 3.1.0-Beta.2 上验证插件启动与热加载。NuVotifier、TreasureChest、Vanish、WorldGuard 和 ChestShop 等可选联动仍需对应插件的环境验证。
+
+原项目：[fantahund/FancyFirework](https://github.com/fantahund/FancyFirework)。

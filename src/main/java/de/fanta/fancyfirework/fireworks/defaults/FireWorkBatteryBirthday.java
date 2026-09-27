@@ -39,7 +39,7 @@ public class FireWorkBatteryBirthday extends FireWorkBattery {
     protected ItemStack createItemStack() {
         ItemStack itemStack = CustomFireworkHeads.getCustomTextureHead(UUID.fromString("f49adfe4-15dd-4672-8457-7963474b0c3d"), "Balloons", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTFiZTQ0ZTg0ZjAxMmY0M2ZhODExNzI3ZDJkNzQ2YTEwYjc1ZGQ5MjQzNzZkZDgwZmJjYjE3NzY4M2QzNTNjZSJ9fX0=");
         ItemMeta meta = itemStack.getItemMeta();
-        meta.setDisplayName(ChatColor.of("#cffe4d") + "Birthday Battery");
+        meta.setDisplayName(ChatColor.of("#cffe4d") + "生日烟花筒");
         meta.setLore(FancyFirework.getPlugin().getConfig().getStringList("itemlore"));
         itemStack.setItemMeta(meta);
         return itemStack;

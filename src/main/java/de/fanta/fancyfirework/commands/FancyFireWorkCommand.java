@@ -16,7 +16,10 @@ public class FancyFireWorkCommand extends SubCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String alias, String commandString, ArgsParser args) {
-        ChatUtil.sendNormalMessage(sender, "FancyFirework v" + plugin.getDescription().getVersion() + " by " + plugin.getDescription().getAuthors());
+        ChatUtil.sendNormalMessage(sender, "FancyFirework v" + plugin.getDescription().getVersion() + "，作者：" + plugin.getDescription().getAuthors());
+        if (sender.hasPermission(FancyFirework.ADMIN_PERMISSION)) {
+            ChatUtil.sendNormalMessage(sender, "管理员烟花大全：/ff menu");
+        }
         return true;
     }
 }

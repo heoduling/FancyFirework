@@ -22,17 +22,17 @@ public class FancyFireworkDisableGlobalCommand extends PlayerSubCommand {
         if (enable) {
             if (plugin.isDisableFireWorkUse()) {
                 plugin.setDisableFireWorkUse(false);
-                ChatUtil.sendNormalMessage(player, "Fireworks can be used now.");
+                ChatUtil.sendNormalMessage(player, "现已允许使用烟花。");
             } else {
-                ChatUtil.sendErrorMessage(player, "Fireworks use is already turned on.");
+                ChatUtil.sendErrorMessage(player, "烟花使用已经开启。");
                 return true;
             }
         } else {
             if (!plugin.isDisableFireWorkUse()) {
                 plugin.setDisableFireWorkUse(true);
-                ChatUtil.sendNormalMessage(player, "Fireworks cannot be used now.");
+                ChatUtil.sendNormalMessage(player, "现已禁止使用烟花。");
             } else {
-                ChatUtil.sendErrorMessage(player, "Fireworks use is already turned off.");
+                ChatUtil.sendErrorMessage(player, "烟花使用已经关闭。");
                 return true;
             }
         }

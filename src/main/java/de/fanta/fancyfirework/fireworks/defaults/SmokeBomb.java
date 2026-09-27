@@ -31,7 +31,7 @@ public class SmokeBomb extends ItemFireWork {
         ItemStack stack = new ItemStack(Material.EGG, 16);
         ItemMeta meta = stack.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName("" + ChatColor.of("#636363") + ChatColor.BOLD + "Smoke Bomb");
+            meta.setDisplayName("" + ChatColor.of("#636363") + ChatColor.BOLD + "烟雾弹");
             meta.setLore(FancyFirework.getPlugin().getConfig().getStringList("itemlorebangsnap"));
             meta.setCustomModelData(654654132);
             stack.setItemMeta(meta);

@@ -22,17 +22,17 @@ public class EnableToggleCommand extends PlayerSubCommand {
         if (enable) {
             if (!plugin.getFireWorkWorks().enabled()) {
                 plugin.getFireWorkWorks().setEnabled(true);
-                ChatUtil.sendNormalMessage(player, "Fireworks spawning was turned on.");
+                ChatUtil.sendNormalMessage(player, "已开启随机烟花生成。");
             } else {
-                ChatUtil.sendErrorMessage(player, "Fireworks spawning is already turned on.");
+                ChatUtil.sendErrorMessage(player, "随机烟花生成已经开启。");
                 return true;
             }
         } else {
             if (plugin.getFireWorkWorks().enabled()) {
                 plugin.getFireWorkWorks().setEnabled(false);
-                ChatUtil.sendNormalMessage(player, "Fireworks spawning was turned off.");
+                ChatUtil.sendNormalMessage(player, "已关闭随机烟花生成。");
             } else {
-                ChatUtil.sendErrorMessage(player, "Fireworks spawning is already turned off.");
+                ChatUtil.sendErrorMessage(player, "随机烟花生成已经关闭。");
                 return true;
             }
         }

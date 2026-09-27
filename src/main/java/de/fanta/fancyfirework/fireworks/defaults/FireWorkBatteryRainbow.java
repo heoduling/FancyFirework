@@ -25,7 +25,7 @@ public class FireWorkBatteryRainbow extends FireWorkBattery {
         ItemStack itemStack = CustomFireworkHeads.getCustomTextureHead(UUID.fromString("a4873b7d-e892-4502-b435-a6090b3d5210"), "Firework Rocket Rainbow",
                 "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjU1ZWE0M2U1OTI3ODVkMDE2YWNkZWVhOWE0YTZmOWNmMjJjMjc1M2U2OTU0MDVlOGM4M2QyZTA5ZWJjZjY0NyJ9fX0=");
         ItemMeta meta = itemStack.getItemMeta();
-        meta.setDisplayName(ChatColor.of("#f26970") + "Ra" + ChatColor.of("#f88e66") + "in" + ChatColor.of("#ffb35c") + "bo" + ChatColor.of("#fbcb60") + "w B" + ChatColor.of("#f7e364") + "a" + ChatColor.of("#b4f07c") + "t" + ChatColor.of("#71fe94") + "t" + ChatColor.of("#73d0c9") + "e" + ChatColor.of("#75a3ff") + "r" + ChatColor.of("#cd70ff") + "y");
+        meta.setDisplayName(ChatColor.of("#f26970") + "彩" + ChatColor.of("#ffb35c") + "虹" + ChatColor.of("#f7e364") + "烟" + ChatColor.of("#71fe94") + "花" + ChatColor.of("#75a3ff") + "筒");
         meta.setLore(FancyFirework.getPlugin().getConfig().getStringList("itemlore"));
         itemStack.setItemMeta(meta);
         return itemStack;

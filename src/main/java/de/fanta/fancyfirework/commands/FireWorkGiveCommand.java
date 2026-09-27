@@ -36,14 +36,14 @@ public class FireWorkGiveCommand extends PlayerSubCommand {
             if (args.hasNext()) {
                 int next = args.getNext(1);
                 if (next < 1 || next > 64) {
-                    ChatUtil.sendErrorMessage(player, "Quantity must be between 1-64.");
+                    ChatUtil.sendErrorMessage(player, "数量必须在 1 到 64 之间。");
                     return true;
                 }
                 amount = next;
 
                 if (args.hasNext()) {
                     if (!player.hasPermission(FancyFirework.ADMIN_PERMISSION)) {
-                        ChatUtil.sendErrorMessage(player, "You do not have the permission to give fireworks to other players.");
+                        ChatUtil.sendErrorMessage(player, "你没有向其他玩家发放烟花的权限。");
                         return true;
                     }
                     String giveName = args.getNext();
@@ -57,12 +57,12 @@ public class FireWorkGiveCommand extends PlayerSubCommand {
                     }
 
                     if (givePlayer == null) {
-                        ChatUtil.sendErrorMessage(player, "Player " + giveName + " is not online.");
+                        ChatUtil.sendErrorMessage(player, "玩家 " + giveName + " 不在线。");
                         return true;
                     }
                 }
             } else {
-                ChatUtil.sendWarningMessage(player, "/fancyfirework give [key] <amount> <PlayerName>");
+                ChatUtil.sendWarningMessage(player, "用法：/fancyfirework give [烟花键] <数量> <玩家名>");
                 return true;
             }
             if (fireWork != null) {
@@ -74,17 +74,17 @@ public class FireWorkGiveCommand extends PlayerSubCommand {
                     try {
                         boolean accepted = target.getScheduler().execute(plugin,
                                 () -> give(player, target, fireWork, amount),
-                                () -> tellSender(player, "Player " + targetName + " is not online.", true), 1);
-                        if (!accepted) ChatUtil.sendErrorMessage(player, "Player " + targetName + " is not online.");
+                                () -> tellSender(player, "玩家 " + targetName + " 不在线。", true), 1);
+                        if (!accepted) ChatUtil.sendErrorMessage(player, "玩家 " + targetName + " 不在线。");
                     } catch (IllegalPluginAccessException ignored) {
-                        ChatUtil.sendErrorMessage(player, "FancyFirework is stopping.");
+                        ChatUtil.sendErrorMessage(player, "FancyFirework 正在停用。");
                     }
                 }
             } else {
-                ChatUtil.sendErrorMessage(player, "Firework " + key + " not available.");
+                ChatUtil.sendErrorMessage(player, "烟花 " + key + " 不存在。");
             }
         } else {
-            ChatUtil.sendWarningMessage(player, "/fancyfirework give [key] <amount> <PlayerName>");
+            ChatUtil.sendWarningMessage(player, "用法：/fancyfirework give [烟花键] <数量> <玩家名>");
             return true;
         }
         return true;
@@ -92,7 +92,7 @@ public class FireWorkGiveCommand extends PlayerSubCommand {
 
     private void give(Player sender, Player target, AbstractFireWork fireWork, int amount) {
         if (plugin.isStopping() || !target.isOnline()) {
-            tellSender(sender, "Player " + target.getName() + " is not online.", true);
+            tellSender(sender, "玩家 " + target.getName() + " 不在线。", true);
             return;
         }
         Inventory inv = target.getInventory();
@@ -104,13 +104,13 @@ public class FireWorkGiveCommand extends PlayerSubCommand {
             else if (existing.isSimilar(itemStack)) capacity += existing.getMaxStackSize() - existing.getAmount();
         }
         if (capacity < amount) {
-            tellSender(sender, "Item could not be added. The inventory is full!", true);
+            tellSender(sender, "背包空间不足，无法发放烟花。", true);
             return;
         }
         inv.addItem(itemStack);
-        ChatUtil.sendNormalMessage(target, amount + "x " + itemStack.getItemMeta().getDisplayName() + ChatUtil.GREEN + " has been added to your inventory");
+        ChatUtil.sendNormalMessage(target, "已收到 " + amount + " 个 " + itemStack.getItemMeta().getDisplayName());
         if (target != sender) {
-            tellSender(sender, amount + "x " + itemStack.getItemMeta().getDisplayName() + ChatUtil.GREEN + " has been added to " + target.getName() + "'s inventory", false);
+            tellSender(sender, "已向 " + target.getName() + " 发放 " + amount + " 个 " + itemStack.getItemMeta().getDisplayName(), false);
         }
     }
 

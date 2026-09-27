@@ -40,7 +40,7 @@ public class FireWorkFountainValentine extends FireWorkFountain {
     protected ItemStack createItemStack() {
         ItemStack itemStack = CustomFireworkHeads.getCustomTextureHead(UUID.fromString("d844b56b-a11a-4d0b-8710-aea25178d1e"), "Heart Block", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGIyNTA1MjcwOWYyYjVlNTFmODcyYzYwNTdjMjc2NmNjNTMyMDZjMTIzNGI3MWVjYTMzOWIzM2Y1YSJ9fX0=");
         ItemMeta meta = itemStack.getItemMeta();
-        meta.setDisplayName(ChatColor.of("#ff5cc3") + "Valentine Fountain");
+        meta.setDisplayName(ChatColor.of("#ff5cc3") + "情人节喷泉烟花");
         meta.setLore(FancyFirework.getPlugin().getConfig().getStringList("itemlore"));
         itemStack.setItemMeta(meta);
         return itemStack;

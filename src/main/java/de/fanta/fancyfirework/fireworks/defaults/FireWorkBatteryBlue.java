@@ -26,8 +26,8 @@ public class FireWorkBatteryBlue extends FireWorkBattery {
         ItemStack itemStack = CustomFireworkHeads.getCustomTextureHead(UUID.fromString("0c0080ae-5b66-410a-8506-a118a26e1f39"), "Firework Rocket Cyan",
                 "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZWFkMjYzMmVlNTU2NDUxMmU2Y2M0OThkZDgwOTM2M2JkYTlkYTUxOGQzNjg4NWFjYmJjZGM5ZmI1NWEifX19");
         ItemMeta meta = itemStack.getItemMeta();
-        meta.setDisplayName(ChatColor.BLUE + "Blue Battery");
-        meta.setLore(FancyFirework.getPlugin().getConfig().getStringList("itemlore")); //TODO for all fireworks later replace with language system
+        meta.setDisplayName(ChatColor.BLUE + "蓝色烟花筒");
+        meta.setLore(FancyFirework.getPlugin().getConfig().getStringList("itemlore"));
         itemStack.setItemMeta(meta);
         return itemStack;
     }

@@ -30,7 +30,7 @@ public class FlashBomb extends ItemFireWork {
         ItemStack stack = new ItemStack(Material.EGG, 16);
         ItemMeta meta = stack.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName("" + ChatColor.of("#d1fdff") + ChatColor.BOLD + "Flash Bomb");
+            meta.setDisplayName("" + ChatColor.of("#d1fdff") + ChatColor.BOLD + "闪光弹");
             meta.setLore(FancyFirework.getPlugin().getConfig().getStringList("itemlorebangsnap"));
             meta.setCustomModelData(12156465);
             stack.setItemMeta(meta);

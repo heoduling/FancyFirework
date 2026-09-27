@@ -66,8 +66,7 @@ public class CubesideVoteListener implements Listener {
             GlobalPlayer globalPlayer = CubesideUtilsBukkit.getInstance().getGlobalDataHelper().getPlayer(cp.getUniqueId());
             if (globalPlayer != null) {
                 CubesideUtilsBukkit.getInstance().getGlobalDataHelper().sendActionBarMessage(globalPlayer,
-                        Component.text("Du hast ", NamedTextColor.GREEN).append(customfirework.getItemMeta().displayName()).append(Component.text(" in der Schatztruhe erhalten!")));
-                // Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "tell " + cp.getName() + " " + FancyFirework.PREFIX + ChatUtil.GREEN + " Du hast " + customfirework.getItemMeta().getDisplayName() + ChatUtil.GREEN + " erhalten und kannst diese in der Schatztruhe am Spawn abholen!");
+                        Component.text("投票奖励：", NamedTextColor.GREEN).append(customfirework.getItemMeta().displayName()).append(Component.text("，请到宝箱领取。")));
             }
         }
     }

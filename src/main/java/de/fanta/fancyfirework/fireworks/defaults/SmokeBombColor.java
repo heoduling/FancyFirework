@@ -32,7 +32,7 @@ public class SmokeBombColor extends ItemFireWork {
         ItemStack stack = new ItemStack(Material.EGG, 16);
         ItemMeta meta = stack.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName(ChatColor.of("#f26970") + "Co" + ChatColor.of("#f88e66") + "lo" + ChatColor.of("#ffb35c") + "r " + ChatColor.of("#fbcb60") + "Sm" + ChatColor.of("#f7e364") + "ok" + ChatColor.of("#b4f07c") + "e " + ChatColor.of("#71fe94") + "B" + ChatColor.of("#73d0c9") + "o" + ChatColor.of("#75a3ff") + "m" + ChatColor.of("#cd70ff") + "b");
+            meta.setDisplayName(ChatColor.of("#f26970") + "彩" + ChatColor.of("#ffb35c") + "色" + ChatColor.of("#f7e364") + "烟" + ChatColor.of("#71fe94") + "雾" + ChatColor.of("#75a3ff") + "弹");
             meta.setLore(FancyFirework.getPlugin().getConfig().getStringList("itemlorebangsnap"));
             meta.setCustomModelData(547855441);
             stack.setItemMeta(meta);

@@ -41,10 +41,10 @@ public class VoteListener implements Listener {
                     lastVotes.put(service, System.currentTimeMillis());
                     ItemStack customfirework = plugin.getRegistry().getRandomFireWorkItem();
                     if (p.getInventory().firstEmpty() == -1) {
-                        ChatUtil.sendErrorMessage(p, "Your inventory is full " + customfirework.getItemMeta().getDisplayName() + ChatUtil.GREEN + " could not be added to your inventory.");
+                        ChatUtil.sendErrorMessage(p, "背包已满，无法领取投票奖励 " + customfirework.getItemMeta().getDisplayName() + "。");
                     } else {
                         p.getInventory().addItem(customfirework);
-                        ChatUtil.sendNormalMessage(p, "You got " + customfirework.getItemMeta().getDisplayName() + ChatUtil.GREEN + " by voting");
+                        ChatUtil.sendNormalMessage(p, "投票奖励：" + customfirework.getItemMeta().getDisplayName());
                     }
                 }, null, 1);
             } catch (IllegalPluginAccessException ignored) {

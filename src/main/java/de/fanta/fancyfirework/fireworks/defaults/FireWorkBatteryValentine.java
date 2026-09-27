@@ -37,7 +37,7 @@ public class FireWorkBatteryValentine extends FireWorkBattery {
     protected ItemStack createItemStack() {
         ItemStack itemStack = CustomFireworkHeads.getCustomTextureHead(UUID.fromString("eecce1f7-01ce-4e89-b98c-62417243bd08"), "Hearts", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMmM4ZmI2MzdkNmUxYTdiYThmYTk3ZWU5ZDI5MTVlODQzZThlYzc5MGQ4YjdiZjYwNDhiZTYyMWVlNGQ1OWZiYSJ9fX0=");
         ItemMeta meta = itemStack.getItemMeta();
-        meta.setDisplayName(ChatColor.of("#ff5cc3") + "Valentine Battery");
+        meta.setDisplayName(ChatColor.of("#ff5cc3") + "情人节烟花筒");
         meta.setLore(FancyFirework.getPlugin().getConfig().getStringList("itemlore"));
         itemStack.setItemMeta(meta);
         return itemStack;

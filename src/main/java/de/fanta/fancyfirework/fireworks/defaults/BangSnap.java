@@ -29,7 +29,7 @@ public class BangSnap extends ItemFireWork {
         ItemStack stack = new ItemStack(Material.EGG, 16);
         ItemMeta meta = stack.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName("" + ChatColor.of("#d07016") + ChatColor.BOLD + "Bang Snap");
+            meta.setDisplayName("" + ChatColor.of("#d07016") + ChatColor.BOLD + "摔炮");
             meta.setLore(FancyFirework.getPlugin().getConfig().getStringList("itemlorebangsnap"));
             meta.setCustomModelData(1286028928);
             stack.setItemMeta(meta);

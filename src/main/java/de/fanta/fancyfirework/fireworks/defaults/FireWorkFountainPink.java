@@ -24,7 +24,7 @@ public class FireWorkFountainPink extends FireWorkFountain {
         ItemStack itemStack = CustomFireworkHeads.getCustomTextureHead(UUID.fromString("8a7a8cf2-e1b9-4b62-8764-9bc108a61517"), "Firework Rocket (black / pink)",
                 "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYzBmYzVjMzhjYTEwMjE3OGM2NDllYWY3NDY0YzI0YjVjNzYyNzVlMWYwOTdhYWJjY2RmYTkyYzY4ZWQ1YjMifX19");
         ItemMeta meta = itemStack.getItemMeta();
-        meta.setDisplayName(ChatColor.of("#ff14d4") + "Pink Fountain");
+        meta.setDisplayName(ChatColor.of("#ff14d4") + "粉色喷泉烟花");
         meta.setLore(FancyFirework.getPlugin().getConfig().getStringList("itemlore"));
         itemStack.setItemMeta(meta);
         return itemStack;
