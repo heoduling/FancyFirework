@@ -37,6 +37,7 @@ public record CommandRegistration(FancyFirework plugin, AdminFireworkMenuCommand
             }
         });
         fancyFireworkRouter.addCommandMapping(new FancyFireWorkCommand(plugin));
+        fancyFireworkRouter.addCommandMapping(new FancyFireWorkHelpCommand(), "help");
         fancyFireworkRouter.addCommandMapping(new EnableToggleCommand(plugin, true), "enable");
         fancyFireworkRouter.addCommandMapping(new EnableToggleCommand(plugin, false), "disable");
         fancyFireworkRouter.addCommandMapping(new FancyFireworkDisableGlobalCommand(plugin, true), "use", "enable");

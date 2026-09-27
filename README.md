@@ -12,17 +12,18 @@
 
 - 开启随机生成后，玩家上方无遮挡时会出现烟花，爆炸后掉落随机内置烟花物品。
 - 可通过 NuVotifier 投票奖励及箱子战利品表获得烟花。
-- 管理员可使用 `/ff give [烟花键] <数量> <玩家名>` 发放烟花；省略玩家名时发给自己。烟花键可通过 Tab 补全。
+- 拥有 `fancyfirework.mod` 权限的玩家可使用 `/ff give <烟花键> <数量> [玩家名]` 领取烟花；发给他人还需 `fancyfirework.admin` 权限。烟花键可通过 Tab 补全。
 
 ## 主要命令与权限
 
 | 命令 | 权限 | 用途 |
 | --- | --- | --- |
+| `/ff help` | 无 | 按权限显示可执行命令；也可输入 `/ff` 查看帮助入口 |
 | `/ff menu` | `fancyfirework.admin` | 打开烟花大全 |
 | `/ff enable`、`/ff disable` | `fancyfirework.admin` | 开关随机烟花生成 |
 | `/ff use enable`、`/ff use disable` | `fancyfirework.admin` | 开关烟花使用 |
-| `/ff setspawnrate [数值]` | `fancyfirework.admin` | 设置随机生成率；数值越大，生成越少 |
-| `/ff give [烟花键] <数量> <玩家名>` | `fancyfirework.mod`，发给他人还需 `fancyfirework.admin` | 发放烟花 |
+| `/ff setspawnrate <数值>` | `fancyfirework.admin` | 设置随机生成率；数值越大，生成越少 |
+| `/ff give <烟花键> <数量> [玩家名]` | `fancyfirework.mod`，发给他人还需 `fancyfirework.admin` | 发放烟花 |
 | `/ff reload` | `fancyfirework.admin` | 重新读取配置 |
 
 ## 配置
