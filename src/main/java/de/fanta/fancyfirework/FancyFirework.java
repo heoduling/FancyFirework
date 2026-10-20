@@ -4,6 +4,7 @@ import de.fanta.fancyfirework.commands.CommandRegistration;
 import de.fanta.fancyfirework.commands.AdminFireworkMenuCommand;
 import de.fanta.fancyfirework.fireworks.FireWorkRegistration;
 import de.fanta.fancyfirework.listners.EventRegistration;
+import de.fanta.fancyfirework.listners.FireworkListener;
 import de.fanta.fancyfirework.schedular.GlobalScheduler;
 import de.fanta.fancyfirework.schedular.Scheduler;
 import de.fanta.fancyfirework.utils.ChatUtil;
@@ -14,9 +15,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bstats.bukkit.Metrics;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 public final class FancyFirework extends JavaPlugin {
@@ -28,15 +31,16 @@ public final class FancyFirework extends JavaPlugin {
     private static FancyFirework plugin;
     private FireWorksRegistry registry;
     private AdminFireworkMenuCommand adminMenu;
+    private FireworkListener fireworkListener;
     private WorldGuardHelper worldGuardHelper;
     private volatile long time;
     private volatile boolean stopping;
     private final List<Permission> ownedPermissions = new ArrayList<>();
-    private boolean redstonemode;
-    private boolean dispenserMode;
-    private int dispenserDelaSeconds;
+    private volatile RuntimeConfig runtimeConfig;
+    private final AtomicBoolean configReloading = new AtomicBoolean();
+    private Metrics metrics;
 
-    private boolean disableFireWorkUse = false;
+    private volatile boolean disableFireWorkUse = false;
 
     private boolean HAS_PLAYER_PROFILE_API;
     private Scheduler scheduler;
@@ -56,16 +60,15 @@ public final class FancyFirework extends JavaPlugin {
         }
 
         scheduler = new GlobalScheduler(this);
-        new bStats(this).registerbStats();
-
         loadConfig();
         saveConfig();
+        metrics = new bStats(this).registerbStats();
 
         this.registry = new FireWorksRegistry();
 
         adminMenu = new AdminFireworkMenuCommand(this);
         new CommandRegistration(this, adminMenu).registerCommands();
-        new EventRegistration(this).registerEvents();
+        fireworkListener = new EventRegistration(this).registerEvents();
         new FireWorkRegistration(this).registerFirework();
 
         this.time = 0;
@@ -75,6 +78,8 @@ public final class FancyFirework extends JavaPlugin {
     @Override
     public void onDisable() {
         stopping = true;
+        if (metrics != null) metrics.shutdown();
+        if (fireworkListener != null) fireworkListener.shutdown();
         if (adminMenu != null) adminMenu.shutdown();
         if (registry != null) registry.cancelAllTasks();
         PluginManager pm = getServer().getPluginManager();
@@ -105,8 +110,31 @@ public final class FancyFirework extends JavaPlugin {
     }
 
     public void reloadFireworkConfig() {
-        reloadConfig();
-        loadConfig();
+        requestConfigReload();
+    }
+
+    public boolean requestConfigReload() {
+        if (stopping || !configReloading.compareAndSet(false, true)) return false;
+        try {
+            getScheduler().runAsync(() -> {
+                try {
+                    if (stopping) return;
+                    reloadConfig();
+                    if (stopping) return;
+                    loadConfig();
+                    getLogger().info("烟花配置已重新加载。");
+                } catch (Exception ex) {
+                    getLogger().severe("烟花配置重载失败：" + ex.getMessage());
+                } finally {
+                    configReloading.set(false);
+                }
+            });
+            return true;
+        } catch (RuntimeException ex) {
+            configReloading.set(false);
+            getLogger().severe("无法提交烟花配置重载：" + ex.getMessage());
+            return false;
+        }
     }
 
     public void loadConfig() {
@@ -118,21 +146,41 @@ public final class FancyFirework extends JavaPlugin {
         if (cfg.getStringList("itemlorebangsnap").equals(List.of("§aThrow them on the floor for fun"))) {
             cfg.set("itemlorebangsnap", List.of("§a扔到地上即可触发"));
         }
-        redstonemode = cfg.getBoolean("redstonemode", false);
-        dispenserMode = cfg.getBoolean("dispenserMode", true);
-        dispenserDelaSeconds = cfg.getInt("dispenserDelaSeconds", 30);
+        runtimeConfig = new RuntimeConfig(
+                cfg.getBoolean("votereward"),
+                cfg.getBoolean("redstonemode", false),
+                cfg.getBoolean("dispenserMode", true),
+                cfg.getInt("dispenserDelaSeconds", 30),
+                cfg.getBoolean("litplayer"),
+                cfg.getBoolean("loottable.enabled"),
+                cfg.getDouble("loottable.chance", 0.5),
+                cfg.getBoolean("loottable.wanderingtrader.enabled"),
+                cfg.getDouble("loottable.wanderingtrader.chance", 0.3),
+                cfg.getInt("loottable.wanderingtrader.minprice"),
+                cfg.getInt("loottable.wanderingtrader.maxprice"),
+                cfg.getInt("loottable.wanderingtrader.maxuse"));
     }
 
+    public RuntimeConfig getRuntimeConfig() {
+        return runtimeConfig;
+    }
+
+    public record RuntimeConfig(boolean voteReward, boolean redstoneMode, boolean dispenserMode,
+                                int dispenserDelaySeconds, boolean litPlayer, boolean lootTableEnabled,
+                                double lootTableChance, boolean wanderingTraderEnabled,
+                                double wanderingTraderChance, int wanderingTraderMinPrice,
+                                int wanderingTraderMaxPrice, int wanderingTraderMaxUse) { }
+
     public boolean isRedstonemode() {
-        return redstonemode;
+        return runtimeConfig.redstoneMode();
     }
 
     public boolean isDispenserMode() {
-        return dispenserMode;
+        return runtimeConfig.dispenserMode();
     }
 
     public int getDispenserDelaSeconds() {
-        return dispenserDelaSeconds;
+        return runtimeConfig.dispenserDelaySeconds();
     }
 
     public boolean isDisableFireWorkUse() {

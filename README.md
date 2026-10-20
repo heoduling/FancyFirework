@@ -22,6 +22,11 @@
 | `/ff use enable`、`/ff use disable` | `fancyfirework.admin` | 开关烟花使用 |
 | `/ff give <烟花键> <数量> [玩家名]` | `fancyfirework.mod`，发给他人还需 `fancyfirework.admin` | 发放烟花 |
 | `/ff reload` | `fancyfirework.admin` | 重新读取配置 |
+| `/ff shopgive <玩家名> <烟花键> <数量>` | 仅服务器控制台 | 给在线玩家发放商店烟花，数量 1–2304；背包空间不足时不发放 |
+
+## UltimateShop 命令商品
+
+UltimateShop 可用 `display-item` 展示对应头颅贴图或投掷物模型，并在 `buy-actions` 中执行 `ff shopgive %player_name% fancyfirework:battery_blue {amount}`。启用多数量购买时，该动作设为 `multi-once: true`，并确保展示物品的 `calculate-amount: true`、数量为 1。菜单展示物品不需要携带烟花标记；实际发给玩家的物品由 FancyFirework 生成。此命令仅接受在线玩家，背包空间不足、玩家离线或插件停用时会拒绝发放并写入日志；UltimateShop 的命令商品不会因此自动退款，需由管理员处理该笔交易。不设置出售价格时，该商品只能购买。
 
 ## 配置
 

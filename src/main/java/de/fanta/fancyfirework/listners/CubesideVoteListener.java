@@ -2,6 +2,8 @@ package de.fanta.fancyfirework.listners;
 
 import com.vexsoftware.votifier.model.Vote;
 import com.vexsoftware.votifier.model.VotifierEvent;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import de.cubeside.connection.GlobalPlayer;
 import de.fanta.fancyfirework.FancyFirework;
 import de.fanta.fancyfirework.utils.ChatUtil;
@@ -9,8 +11,8 @@ import de.iani.cubesideutils.bukkit.plugin.CubesideUtilsBukkit;
 import de.iani.playerUUIDCache.CachedPlayer;
 import de.iani.playerUUIDCache.PlayerUUIDCache;
 import de.iani.treasurechest.TreasureChest;
-import java.util.HashMap;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -24,8 +26,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class CubesideVoteListener implements Listener {
     private final FancyFirework plugin = FancyFirework.getPlugin();
 
-    private static final long TWO_HOURS_IN_MILLIS = 1000L * 60 * 60 * 2;
-    private final HashMap<UUID, HashMap<String, Long>> votes = new HashMap<>();
+    private record VoteKey(UUID player, String service) { }
+
+    private final Cache<VoteKey, Boolean> votes = CacheBuilder.newBuilder()
+            .expireAfterWrite(2, TimeUnit.HOURS).build();
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerVote(VotifierEvent e) {
@@ -34,7 +38,7 @@ public class CubesideVoteListener implements Listener {
         Vote vote = e.getVote();
 
         ItemStack customfirework = plugin.getRegistry().getRandomValentineFireWorkItem();
-        if (!plugin.getConfig().getBoolean("votereward")) {
+        if (!plugin.getRuntimeConfig().voteReward()) {
             return;
         }
         if (playerUUIDCache == null) {
@@ -46,16 +50,7 @@ public class CubesideVoteListener implements Listener {
         CachedPlayer cp = playerUUIDCache.getPlayerFromNameOrUUID(vote.getUsername().trim());
 
         if (cp != null && customfirework != null) {
-            HashMap<String, Long> lastVotes = votes.get(cp.getUniqueId());
-            if (lastVotes == null) {
-                lastVotes = new HashMap<>();
-                votes.put(cp.getUniqueId(), lastVotes);
-            }
-            Long lastTime = lastVotes.get(vote.getServiceName());
-            if (lastTime != null && lastTime + TWO_HOURS_IN_MILLIS > System.currentTimeMillis()) {
-                return;
-            }
-            lastVotes.put(vote.getServiceName(), System.currentTimeMillis());
+            if (votes.asMap().putIfAbsent(new VoteKey(cp.getUniqueId(), vote.getServiceName()), Boolean.TRUE) != null) return;
 
             ItemStack displayItem = new ItemStack(Material.FIREWORK_ROCKET, 1);
             ItemMeta displayItemMeta = displayItem.getItemMeta();

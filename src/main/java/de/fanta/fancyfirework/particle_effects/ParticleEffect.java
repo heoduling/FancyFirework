@@ -8,26 +8,27 @@ import java.util.List;
 
 public class ParticleEffect {
 
+    private static final int MAX_POINTS_PER_SHAPE = 128;
     private final Location origin;
-    private final Vector rotation;
-    private final Shape shape;
     private final ISpawnParticle spawnParticleFunc;
-    private List<Vector> shapeVectors;
+    private final List<Vector> shapeVectors;
 
     public ParticleEffect(Location origin, Vector rotation, Shape shape, ISpawnParticle spawnParticleFunc) {
         this.spawnParticleFunc = spawnParticleFunc;
         this.origin = origin;
-        this.rotation = rotation;
-        this.shape = shape;
         shape.createVectors();
         shapeVectors = shape.getVectors();
         if (rotation != null) {
-            shapeVectors = shapeVectors.stream().map(vector -> VectorUtils.rotateVector(vector.clone(), rotation.getX(), rotation.getY(), rotation.getZ())).toList();
+            for (Vector vector : shapeVectors) {
+                VectorUtils.rotateVector(vector, rotation.getX(), rotation.getY(), rotation.getZ());
+            }
         }
     }
 
     public void draw() {
-        for (Vector vector : shapeVectors) {
+        int points = Math.min(shapeVectors.size(), MAX_POINTS_PER_SHAPE);
+        for (int i = 0; i < points; i++) {
+            Vector vector = shapeVectors.get((int) ((long) i * shapeVectors.size() / points));
             origin.add(vector);
             spawnParticleFunc.spawn(origin);
             origin.subtract(vector);

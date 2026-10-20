@@ -1,7 +1,8 @@
 package de.fanta.fancyfirework.listners;
 
 import de.fanta.fancyfirework.FancyFirework;
-import org.bukkit.Location;
+import de.fanta.fancyfirework.FancyFirework.RuntimeConfig;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Entity;
@@ -12,17 +13,17 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.plugin.IllegalPluginAccessException;
 
 public class LootTableListener implements Listener {
     private final FancyFirework plugin = FancyFirework.getPlugin();
-    private final Set<Object> lootTableSaveList = ConcurrentHashMap.newKeySet();
+    private final NamespacedKey checkedKey = new NamespacedKey(plugin, "loot_checked");
 
     @EventHandler
     public void onPlayerUseLootChest(PlayerInteractEvent e) {
@@ -39,8 +40,9 @@ public class LootTableListener implements Listener {
             return;
         }
 
-        if (plugin.getConfig().getBoolean("loottable.enabled")) {
-            addFireworktoLootChest(chest.getInventory(), chest.getLocation(), null);
+        RuntimeConfig cfg = plugin.getRuntimeConfig();
+        if (cfg.lootTableEnabled() && markChecked(chest.getPersistentDataContainer()) && chest.update()) {
+            addFireworktoLootChest(chest.getInventory(), null, cfg);
         }
     }
 
@@ -52,11 +54,13 @@ public class LootTableListener implements Listener {
             return;
         }
 
-        if (plugin.getConfig().getBoolean("loottable.enabled")) {
+        RuntimeConfig cfg = plugin.getRuntimeConfig();
+        if (cfg.lootTableEnabled()) {
             try {
                 minecart.getScheduler().execute(plugin, () -> {
-                    if (!plugin.isStopping() && minecart.isValid() && minecart.getLootTable() != null) {
-                        addFireworktoLootChest(minecart.getInventory(), minecart.getUniqueId(), minecart);
+                    if (!plugin.isStopping() && minecart.isValid() && minecart.getLootTable() != null
+                            && markChecked(minecart.getPersistentDataContainer())) {
+                        addFireworktoLootChest(minecart.getInventory(), minecart, cfg);
                     }
                 }, null, 1);
             } catch (IllegalPluginAccessException ignored) {
@@ -66,10 +70,15 @@ public class LootTableListener implements Listener {
 
     }
 
-    private void addFireworktoLootChest(Inventory chest, Object id, StorageMinecart minecart) {
-        if (!lootTableSaveList.add(id)) return;
+    private boolean markChecked(PersistentDataContainer data) {
+        if (data.has(checkedKey, PersistentDataType.BYTE)) return false;
+        data.set(checkedKey, PersistentDataType.BYTE, (byte) 1);
+        return true;
+    }
+
+    private void addFireworktoLootChest(Inventory chest, StorageMinecart minecart, RuntimeConfig cfg) {
         Random random = new Random();
-        double chance = plugin.getConfig().getDouble("loottable.chance", 0.5);
+        double chance = cfg.lootTableChance();
         boolean hasFireWork = random.nextDouble() < chance;
         if (hasFireWork) {
             ItemStack randomFirework = plugin.getRegistry().getRandomFireWorkItem();

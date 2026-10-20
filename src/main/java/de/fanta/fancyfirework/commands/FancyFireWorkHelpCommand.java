@@ -25,6 +25,7 @@ public class FancyFireWorkHelpCommand extends SubCommand {
                 ChatUtil.sendNormalMessage(sender, "/ff use enable、/ff use disable - 开关烟花使用");
             }
             ChatUtil.sendNormalMessage(sender, "/ff reload - 重新读取配置");
+            if (!player) ChatUtil.sendNormalMessage(sender, "/ff shopgive <玩家名> <烟花键> <数量> - 商店控制台发放烟花");
         }
         return true;
     }

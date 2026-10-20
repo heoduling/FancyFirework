@@ -3,6 +3,7 @@ package de.fanta.fancyfirework.listners;
 import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
 import com.google.common.base.Objects;
 import de.fanta.fancyfirework.FancyFirework;
+import de.fanta.fancyfirework.FancyFirework.RuntimeConfig;
 import de.fanta.fancyfirework.events.FireworkDeathEvent;
 import de.fanta.fancyfirework.fireworks.AbstractFireWork;
 import de.fanta.fancyfirework.fireworks.BlockFireWork;
@@ -13,7 +14,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -61,13 +65,25 @@ import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.util.BlockVector;
 
 public class FireworkListener implements Listener {
 
     private final FancyFirework plugin = FancyFirework.getPlugin();
 
-    private final ConcurrentHashMap<BlockVector, Long> dispenserPlaceTimes = new ConcurrentHashMap<>();
+    private record DispenserKey(UUID world, int x, int y, int z) { }
+
+    private final ConcurrentHashMap<DispenserKey, Long> dispenserPlaceTimes = new ConcurrentHashMap<>();
+    private final ScheduledTask dispenserCleanup = plugin.getServer().getAsyncScheduler().runAtFixedRate(
+            plugin, task -> {
+                long now = System.currentTimeMillis();
+                long cooldown = Math.max(0, plugin.getDispenserDelaSeconds()) * 1000L;
+                dispenserPlaceTimes.entrySet().removeIf(entry -> now - entry.getValue() >= cooldown);
+            }, 1, 1, TimeUnit.MINUTES);
+
+    public void shutdown() {
+        dispenserCleanup.cancel();
+        dispenserPlaceTimes.clear();
+    }
 
     @EventHandler
     public void onFireworkExplode(FireworkExplodeEvent e) {
@@ -126,14 +142,12 @@ public class FireworkListener implements Listener {
         event.setCancelled(true);
 
         plugin.getScheduler().runLocalDelayed(event.getBlock().getLocation(), () -> {
-            BlockVector blockVector = block.getLocation().toVector().toBlockVector();
-            long lastPlaceTime = dispenserPlaceTimes.getOrDefault(blockVector, 0L);
+            DispenserKey key = new DispenserKey(block.getWorld().getUID(), block.getX(), block.getY(), block.getZ());
+            long lastPlaceTime = dispenserPlaceTimes.getOrDefault(key, 0L);
 
             if (System.currentTimeMillis() - lastPlaceTime < (plugin.getDispenserDelaSeconds() * 1000L)) {
                 return;
             }
-            dispenserPlaceTimes.remove(blockVector);
-
             Inventory dispenserInventory = dispenser.getInventory();
             for (int i = 0; i < dispenserInventory.getSize(); i++) {
                 ItemStack item = dispenserInventory.getItem(i);
@@ -155,7 +169,7 @@ public class FireworkListener implements Listener {
                 ArmorStand armorStand = blockFireWork.spawnAtBlock(placeBlock.getRelative(BlockFace.DOWN));
                 blockFireWork.onDispenserPlace(placeBlock, armorStand);
                 blockFireWork.onLit(armorStand, null);
-                dispenserPlaceTimes.put(blockVector, System.currentTimeMillis());
+                dispenserPlaceTimes.put(key, System.currentTimeMillis());
             }
         }, 1L);
     }
@@ -167,7 +181,7 @@ public class FireworkListener implements Listener {
         if (entity instanceof ArmorStand) {
             fireWork = plugin.getRegistry().getByEntity(entity);
         }
-        if (plugin.getConfig().getBoolean("litplayer") && entity instanceof Player player) {
+        if (plugin.getRuntimeConfig().litPlayer() && entity instanceof Player player) {
             ItemStack fireworkStack = player.getInventory().getHelmet();
             if (fireworkStack != null) {
                 fireWork = plugin.getRegistry().getByItemStack(fireworkStack);
@@ -286,7 +300,7 @@ public class FireworkListener implements Listener {
                         ItemStack fireworkStack = player.getInventory().getHelmet();
                         if (fireworkStack != null) {
                             AbstractFireWork fireWork = plugin.getRegistry().getByItemStack(fireworkStack);
-                            if (plugin.getConfig().getBoolean("litplayer") && fireWork instanceof BlockFireWork blockFireWork) {
+                            if (plugin.getRuntimeConfig().litPlayer() && fireWork instanceof BlockFireWork blockFireWork) {
                                 if (!e.getPlayer().hasPermission(blockFireWork.getPermission())) {
                                     ChatUtil.sendErrorMessage(e.getPlayer(), "你没有在这里使用该烟花的权限！");
                                     e.setCancelled(true);
@@ -454,12 +468,13 @@ public class FireworkListener implements Listener {
             return;
         }
 
-        if (!plugin.getConfig().getBoolean("loottable.wanderingtrader.enabled")) {
+        RuntimeConfig cfg = plugin.getRuntimeConfig();
+        if (!cfg.wanderingTraderEnabled()) {
             return;
         }
 
         Random random = new Random();
-        double fireworkChance = plugin.getConfig().getDouble("loottable.wanderingtrader.chance", 0.3);
+        double fireworkChance = cfg.wanderingTraderChance();
         boolean hasFirework = random.nextDouble() < fireworkChance;
 
         if (!hasFirework) {
@@ -468,9 +483,9 @@ public class FireworkListener implements Listener {
 
         List<MerchantRecipe> recipes = new ArrayList<>(trader.getRecipes());
 
-        int minprice = plugin.getConfig().getInt("loottable.wanderingtrader.minprice");
-        int maxprice = plugin.getConfig().getInt("loottable.wanderingtrader.maxprice");
-        int maxuse = plugin.getConfig().getInt("loottable.wanderingtrader.maxuse");
+        int minprice = cfg.wanderingTraderMinPrice();
+        int maxprice = cfg.wanderingTraderMaxPrice();
+        int maxuse = cfg.wanderingTraderMaxUse();
 
         MerchantRecipe recipe = new MerchantRecipe(plugin.getRegistry().getRandomFireWorkItem(), 0, maxuse, true);
         recipe.addIngredient(new ItemStack(Material.EMERALD, minprice + random.nextInt(maxprice - minprice)));

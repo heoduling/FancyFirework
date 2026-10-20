@@ -41,6 +41,7 @@ public record CommandRegistration(FancyFirework plugin, AdminFireworkMenuCommand
         fancyFireworkRouter.addCommandMapping(new FancyFireworkDisableGlobalCommand(plugin, true), "use", "enable");
         fancyFireworkRouter.addCommandMapping(new FancyFireworkDisableGlobalCommand(plugin, false), "use", "disable");
         fancyFireworkRouter.addCommandMapping(new FireWorkGiveCommand(plugin), "give");
+        fancyFireworkRouter.addCommandMapping(new FireWorkShopGiveCommand(plugin), "shopgive");
         fancyFireworkRouter.addCommandMapping(adminMenu, "menu");
         fancyFireworkRouter.addCommandMapping(new FancyFireWorkReloadCommand(plugin), "reload");
 

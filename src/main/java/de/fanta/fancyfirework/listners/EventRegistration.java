@@ -10,7 +10,7 @@ public record EventRegistration(FancyFirework plugin) {
 
     public static final PluginManager pM = Bukkit.getPluginManager();
 
-    public void registerEvents() {
+    public FireworkListener registerEvents() {
         if (plugin.getServer().getPluginManager().getPlugin("Votifier") != null) {
             if (plugin.getServer().getPluginManager().getPlugin("TreasureChest") == null) {
                 pM.registerEvents(new VoteListener(), plugin);
@@ -23,7 +23,9 @@ public record EventRegistration(FancyFirework plugin) {
         if (plugin.getServer().getPluginManager().isPluginEnabled("ChestShop")) {
             pM.registerEvents(new ChestShopListener(plugin), plugin);
         }
-        pM.registerEvents(new FireworkListener(), plugin);
+        FireworkListener fireworkListener = new FireworkListener();
+        pM.registerEvents(fireworkListener, plugin);
         pM.registerEvents(new LootTableListener(), plugin);
+        return fireworkListener;
     }
 }
