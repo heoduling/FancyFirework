@@ -77,7 +77,7 @@ public class AdminFireworkMenuCommand extends PlayerSubCommand implements Listen
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
-        if (!(event.getView().getTopInventory().getHolder() instanceof MenuHolder holder)) return;
+        if (!(event.getView().getTopInventory().getHolder(false) instanceof MenuHolder holder)) return;
         boolean alreadyCancelled = event.isCancelled();
         event.setCancelled(true);
         if (alreadyCancelled || plugin.isStopping() || !plugin.isEnabled()
@@ -107,17 +107,17 @@ public class AdminFireworkMenuCommand extends PlayerSubCommand implements Listen
 
     @EventHandler
     public void onDrag(InventoryDragEvent event) {
-        if (event.getView().getTopInventory().getHolder() instanceof MenuHolder) event.setCancelled(true);
+        if (event.getView().getTopInventory().getHolder(false) instanceof MenuHolder) event.setCancelled(true);
     }
 
     @EventHandler
     public void onClose(InventoryCloseEvent event) {
-        if (event.getView().getTopInventory().getHolder() instanceof MenuHolder holder) activeMenus.remove(holder);
+        if (event.getView().getTopInventory().getHolder(false) instanceof MenuHolder holder) activeMenus.remove(holder);
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        if (event.getPlayer().getOpenInventory().getTopInventory().getHolder() instanceof MenuHolder holder) activeMenus.remove(holder);
+        if (event.getPlayer().getOpenInventory().getTopInventory().getHolder(false) instanceof MenuHolder holder) activeMenus.remove(holder);
     }
 
     private void registerPlugManHook() {

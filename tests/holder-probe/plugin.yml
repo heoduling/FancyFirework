@@ -1,0 +1,9 @@
+name: HolderProbe
+version: '1'
+main: ffprobe.HolderProbe
+api-version: '26.2'
+folia-supported: true
+depend: [FancyFirework]
+commands:
+  holderprobe:
+    description: Runs synthetic event checks against the real core and plugin
